@@ -3,26 +3,6 @@ class TransactionsController < ApplicationController
     def index
         @trans = Transaction.joins(:category)
 
-        # {
-        #     2011 => {
-        #         total: 1234,
-        #         month => {
-        #             total: 123,
-        #             0 => {
-        #                 total: 12,
-        #                 day => []
-        #             },
-        #             1 => {
-        #                 total: 34,
-        #                 day => []
-        #             }
-        #         }
-        #     },
-        #     2012 => { ... },
-        #     2013 => { ... },
-        #     2014 => { ... },
-        # }
-
         @data = {}
         @years_grouped = @trans.group_by{|tran| tran.date.year}
 
@@ -48,6 +28,12 @@ class TransactionsController < ApplicationController
                         'total' => 0,
                         'transactions' => days_grouped[day] || []
                     })
+
+                    if (days_grouped[day])
+                        days_grouped[day].each do |transaction|
+                            @data[year]['month'][month]['day'][-1]['total'] += transaction.amount / 100
+                        end
+                    end
                 end
             end
         end
