@@ -1,5 +1,9 @@
 class TransactionsController < ApplicationController
 
+    def create 
+        Transaction.create(transaction_params)
+    end
+
     def index
         @trans = Transaction.joins(:category)
 
@@ -39,6 +43,12 @@ class TransactionsController < ApplicationController
         end
 
         render json: @data
+    end
+
+    private 
+
+    def transaction_params
+        params.require(:transaction).permit(:description, :amount, :date)
     end
 
 end
