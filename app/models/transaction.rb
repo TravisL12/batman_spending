@@ -1,5 +1,5 @@
 class Transaction < ApplicationRecord
     validates :amount, :uniqueness => { :scope => [:date, :description] }
 
-    has_one :category
+    belongs_to :category
 end

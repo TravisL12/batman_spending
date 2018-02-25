@@ -22,3 +22,11 @@ Things you may want to cover:
 * Deployment instructions
 
 * ...
+
+
+Tutorials referenced:
+For setting up users (Hartl)
+https://www.railstutorial.org/book/modeling_users
+
+Setting up categories:
+https://blog.skcript.com/implementing-categories-in-ruby-on-rails-14c2b5e77b34
