@@ -24,7 +24,5 @@ CSV.foreach("db/transactions_seed.csv", :headers => true) do |row|
         amount: row['amount'],
         category_id: category.id,
         user_id: default_user.id
-        )
-
-
+    )
 end
