@@ -26,10 +26,10 @@ ActiveRecord::Schema.define(version: 20180225225249) do
     t.string "location"
     t.string "payee"
     t.string "method"
-    t.string "category_id"
+    t.integer "category_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "user_id"
+    t.integer "user_id"
   end
 
   create_table "users", force: :cascade do |t|
