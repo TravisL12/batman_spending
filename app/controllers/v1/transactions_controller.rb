@@ -1,7 +1,7 @@
 class V1::TransactionsController < ApplicationController
-    before_action :authenticate_user
+    before_action :authenticate_v1_transaction
 
-    def create 
+    def create
         Transaction.create(transaction_params)
     end
 
