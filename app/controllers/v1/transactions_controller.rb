@@ -12,7 +12,7 @@ class V1::TransactionsController < ApplicationController
         year_end_date = date.end_of_year
 
         @data = {}
-        transactions = Transaction.joins(:category).where(:date => year_start_date..year_end_date);
+        transactions = Transaction.joins(:category).where(:date => year_start_date..year_end_date, :user_id => current_user.id);
 
         @data[year] = {
             'month' => {},

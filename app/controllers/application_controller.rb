@@ -5,7 +5,7 @@ class ApplicationController < ActionController::API
   private
 
   def authenticate_v1_transaction
-    authenticate_for V1::Transaction
+    authenticate_for Transaction
   end
 
 end
