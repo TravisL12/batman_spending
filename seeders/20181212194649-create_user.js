@@ -8,7 +8,7 @@ module.exports = {
         [
           {
             name: "Travis",
-            email: "travis@travis.com",
+            email: "travis2@travis.com",
             createdAt: new Date(),
             updatedAt: new Date()
           }
@@ -16,7 +16,6 @@ module.exports = {
         {}
       )
       .then(userId => {
-        console.log(userId);
         return queryInterface.bulkInsert(
           "Transactions",
           [
