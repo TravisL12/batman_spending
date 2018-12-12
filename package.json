@@ -1,0 +1,19 @@
+{
+  "name": "superman_spending_api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "node ./rest/server.js",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./rest/server.js"
+  },
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "body-parser": "*",
+    "express": "*",
+    "sequelize": "^4.41.2",
+    "sequelize-cli": "^5.4.0"
+  }
+}
