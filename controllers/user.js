@@ -1,21 +1,9 @@
-const models = require("../models");
-const User = models.User;
-const Transaction = models.Transaction;
+const User = require("../models").User;
+const Transaction = require("../models").Transaction;
 
 module.exports = {
   list(req, res) {
-    return User.findAll({
-      include: [
-        {
-          model: Transaction,
-          as: "transactions"
-        }
-      ],
-      order: [
-        ["createdAt", "DESC"],
-        [{ model: Transaction, as: "transactions" }, "createdAt", "DESC"]
-      ]
-    })
+    return User.findAll()
       .then(users => res.status(200).send(users))
       .catch(error => {
         res.status(400).send(error);
