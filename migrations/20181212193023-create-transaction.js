@@ -1,7 +1,7 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("transactions", {
+    const transactionTable = queryInterface.createTable("transactions", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -38,6 +38,17 @@ module.exports = {
         type: Sequelize.DATE
       }
     });
+
+    queryInterface.addConstraint(
+      "transactions",
+      ["description", "date", "amount"],
+      {
+        type: "unique",
+        name: "unique_description_amount_date"
+      }
+    );
+
+    return transactionTable;
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable("transactions");

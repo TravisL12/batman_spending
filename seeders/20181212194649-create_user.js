@@ -66,7 +66,9 @@ module.exports = {
 
         const results = await Promise.all(transactionsWithUser);
 
-        return queryInterface.bulkInsert("Transactions", results, {});
+        return queryInterface.bulkInsert("Transactions", results, {
+          ignoreDuplicates: true
+        });
       });
   },
 
