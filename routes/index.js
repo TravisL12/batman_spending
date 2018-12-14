@@ -11,5 +11,6 @@ router.delete("/user/:id", userController.delete);
 
 router.get("/transaction", transactionController.list);
 router.get("/transaction/:id", transactionController.getById);
+router.post("/transaction", transactionController.add);
 
 module.exports = router;
