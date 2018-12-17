@@ -2,6 +2,7 @@
 const fs = require("fs");
 const parse = require("csv-parse");
 const models = require("../models");
+const authService = require("../services/auth");
 
 // function createTransaction(data, userId, categoryId, subcategoryId) {
 //   const { description, amount, date, payee } = data;
@@ -28,18 +29,14 @@ const models = require("../models");
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.bulkInsert(
-      "Users",
-      [
-        {
-          name: "Travis",
-          email: `travis@travis.com`,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }
-      ],
-      { ignoreDuplicates: true }
-    );
+    return authService.createUser({
+      name: "Travis",
+      email: `travis@travis.com`,
+      password: "password",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
     // .then(async userId => {
     //   const transactionsWithUser = transactions.map(async data => {
     //     const [category, isCreated] = await models.Category.findOrCreate({

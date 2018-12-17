@@ -4,20 +4,26 @@
     "password": "password",
     "database": "superman_spending_development",
     "host": "127.0.0.1",
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "jwt_encryption": "PleaseChange",
+    "jwt_expiration": "10000"
   },
   "test": {
     "username": "root",
     "password": "password",
     "database": "superman_spending_test",
     "host": "127.0.0.1",
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "jwt_encryption": "PleaseChange",
+    "jwt_expiration": "10000"
   },
   "production": {
     "username": "root",
     "password": "password",
     "database": "superman_spending_production",
     "host": "127.0.0.1",
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "jwt_encryption": "PleaseChange",
+    "jwt_expiration": "10000"
   }
 }

@@ -1,5 +1,6 @@
-const User = require("../models").User;
-const Transaction = require("../models").Transaction;
+const { User, Transaction } = require("../models");
+const authService = require("../services/auth");
+const { to, ReE, ReS } = require("../services/utility");
 
 module.exports = {
   list(req, res) {
@@ -30,12 +31,19 @@ module.exports = {
       .catch(error => res.status(400).send(error));
   },
 
-  add(req, res) {
-    return User.create({
-      email: req.body.email
-    })
-      .then(user => res.status(201).send(user))
-      .catch(error => res.status(400).send(error));
+  async add(req, res) {
+    const [err, user] = await to(authService.createUser(req.body));
+    if (err) return ReE(res, err, 422);
+
+    return ReS(
+      res,
+      {
+        message: "Successfully created new user.",
+        user: user.toWeb(),
+        token: user.getJWT()
+      },
+      201
+    );
   },
 
   update(req, res) {
@@ -77,5 +85,13 @@ module.exports = {
           .catch(error => res.status(400).send(error));
       })
       .catch(error => res.status(400).send(error));
+  },
+
+  async login(req, res) {
+    let err, user;
+    [err, user] = await to(authService.authUser(req.body));
+    if (err) return ReE(res, err, 422);
+
+    return ReS(res, { token: user.getJWT(), user: user.toWeb() });
   }
 };

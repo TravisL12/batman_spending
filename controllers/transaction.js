@@ -1,5 +1,4 @@
-const Transaction = require("../models").Transaction;
-const models = require("../models");
+const { User, Category, Transaction } = require("../models");
 
 module.exports = {
   list(req, res) {
@@ -23,17 +22,17 @@ module.exports = {
     const createdAt = new Date();
     const updatedAt = new Date();
 
-    const user = await models.User.find({
+    const user = await User.find({
       where: { email: "travis@travis.com" }
     });
 
-    const [categoryObj, isCreated] = await models.Category.findOrCreate({
+    const [categoryObj, isCreated] = await Category.findOrCreate({
       where: {
         name: category
       }
     });
 
-    const [subcategoryObj, isSubCreated] = await models.Category.findOrCreate({
+    const [subcategoryObj, isSubCreated] = await Category.findOrCreate({
       where: {
         name: subcategory
       },

@@ -2,11 +2,15 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const apiRoutes = require("./routes");
 const app = express(); // Please do not remove this line, since CLI uses this line as guidance to import new controllers
+const passport = require("passport");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 const port = process.env.PORT || 3000;
+
+//Passport
+app.use(passport.initialize());
 
 app.use("/api", apiRoutes);
 
