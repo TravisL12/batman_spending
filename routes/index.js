@@ -1,51 +1,32 @@
 const express = require("express");
 const router = express.Router();
-const userController = require("../controllers").user;
-const transactionController = require("../controllers").transaction;
+const { user, transaction } = require("../controllers");
 const passport = require("passport");
 require("./../middleware/passport")(passport);
 
-router.get(
-  "/user",
-  passport.authenticate("jwt", { session: false }),
-  userController.list
-);
-router.get(
-  "/user/:id",
-  passport.authenticate("jwt", { session: false }),
-  userController.getById
-);
-router.post(
-  "/user",
-  passport.authenticate("jwt", { session: false }),
-  userController.add
-);
+router.post("/user/create", user.create);
 router.put(
-  "/user/:id",
+  "/user/update",
   passport.authenticate("jwt", { session: false }),
-  userController.update
+  user.update
 );
-router.delete(
-  "/user/:id",
-  passport.authenticate("jwt", { session: false }),
-  userController.delete
-);
-router.post("/users/login", userController.login);
+
+router.post("/users/login", user.login);
 
 router.get(
-  "/transaction",
+  "/transactions",
   passport.authenticate("jwt", { session: false }),
-  transactionController.list
+  transaction.list
 );
 router.get(
-  "/transaction/:id",
+  "/transactions/:id",
   passport.authenticate("jwt", { session: false }),
-  transactionController.getById
+  transaction.getById
 );
 router.post(
-  "/transaction",
+  "/transactions",
   passport.authenticate("jwt", { session: false }),
-  transactionController.add
+  transaction.create
 );
 
 module.exports = router;

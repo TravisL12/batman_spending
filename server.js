@@ -16,7 +16,7 @@ app.use("/api", apiRoutes);
 
 app.use("/", function(req, res) {
   res.statusCode = 200; //send the appropriate status code
-  res.json({ status: "success", message: "Parcel Pending API", data: {} });
+  res.json({ status: "success", message: "API hears you!", data: {} });
 });
 
 // catch 404 and forward to error handler

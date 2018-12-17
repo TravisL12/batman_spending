@@ -3,14 +3,6 @@ const authService = require("../services/auth");
 const { to, ReE, ReS } = require("../services/utility");
 
 module.exports = {
-  list(req, res) {
-    return User.findAll()
-      .then(users => res.status(200).send(users))
-      .catch(error => {
-        res.status(400).send(error);
-      });
-  },
-
   getById(req, res) {
     return User.findById(req.params.id, {
       include: [
@@ -31,7 +23,7 @@ module.exports = {
       .catch(error => res.status(400).send(error));
   },
 
-  async add(req, res) {
+  async create(req, res) {
     const [err, user] = await to(authService.createUser(req.body));
     if (err) return ReE(res, err, 422);
 

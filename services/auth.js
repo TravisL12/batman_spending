@@ -1,6 +1,7 @@
 const { User } = require("../models");
 const validator = require("validator");
 const { to, TE } = require("../services/utility");
+const jwt = require("jsonwebtoken");
 
 const getUniqueKeyFromBody = function(body) {
   // this is so they can send in options unique_key, or email and it will work
@@ -15,7 +16,6 @@ const getUniqueKeyFromBody = function(body) {
 
   return unique_key;
 };
-module.exports.getUniqueKeyFromBody = getUniqueKeyFromBody;
 
 const createUser = async userInfo => {
   let unique_key, auth_info, err;
@@ -40,7 +40,6 @@ const createUser = async userInfo => {
     TE("A valid email was not entered.");
   }
 };
-module.exports.createUser = createUser;
 
 const authUser = async function(userInfo) {
   //returns token
@@ -69,4 +68,9 @@ const authUser = async function(userInfo) {
 
   return user;
 };
-module.exports.authUser = authUser;
+
+module.exports = {
+  getUniqueKeyFromBody,
+  createUser,
+  authUser
+};

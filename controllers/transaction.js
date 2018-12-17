@@ -1,15 +1,24 @@
-const { User, Category, Transaction } = require("../models");
+const { Category, Transaction } = require("../models");
 
 module.exports = {
   list(req, res) {
-    return Transaction.findAll()
-      .then(users => res.status(200).send(users))
+    const user = req.user.dataValues;
+
+    return Transaction.findAll({
+      where: {
+        user_id: user.id
+      }
+    })
+      .then(transactions => {
+        res.status(200).send(transactions);
+      })
       .catch(error => {
         res.status(400).send(error);
       });
   },
 
-  async add(req, res) {
+  async create(req, res) {
+    const user = req.user.dataValues;
     const {
       description,
       payee,
@@ -21,10 +30,6 @@ module.exports = {
 
     const createdAt = new Date();
     const updatedAt = new Date();
-
-    const user = await User.find({
-      where: { email: "travis@travis.com" }
-    });
 
     const [categoryObj, isCreated] = await Category.findOrCreate({
       where: {
@@ -57,7 +62,14 @@ module.exports = {
   },
 
   getById(req, res) {
-    return Transaction.findById(req.params.id)
+    const user = req.user.dataValues;
+
+    return Transaction.find({
+      where: {
+        id: req.params.id,
+        user_id: user.id
+      }
+    })
       .then(transaction => {
         if (!transaction) {
           return res.status(404).send({
