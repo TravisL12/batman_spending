@@ -1,4 +1,6 @@
 const { Category, Transaction } = require("../models");
+const fs = require("fs");
+const parse = require("csv-parse");
 
 module.exports = {
   list(req, res) {
@@ -14,6 +16,21 @@ module.exports = {
       })
       .catch(error => {
         res.status(400).send(error);
+      });
+  },
+
+  async import(req, res, next) {
+    console.log("hey!");
+    const transactions = [];
+    fs.createReadStream(req.file.path)
+      .pipe(parse({ columns: true }))
+      .on("data", function(csvrow) {
+        transactions.push(csvrow);
+      })
+      .on("end", () => {
+        fs.unlinkSync(req.file.path);
+        console.log(transactions);
+        res.status(200).send("Nice work!");
       });
   },
 

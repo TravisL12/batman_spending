@@ -5,7 +5,7 @@
     "database": "superman_spending_development",
     "host": "127.0.0.1",
     "dialect": "mysql",
-    "jwt_encryption": "PleaseChange",
+    "jwt_encryption": "TheMiddleIsTheStartOfTheEnd",
     "jwt_expiration": "10000"
   },
   "test": {
@@ -14,7 +14,7 @@
     "database": "superman_spending_test",
     "host": "127.0.0.1",
     "dialect": "mysql",
-    "jwt_encryption": "PleaseChange",
+    "jwt_encryption": "TheMiddleIsTheStartOfTheEnd",
     "jwt_expiration": "10000"
   },
   "production": {
@@ -23,7 +23,7 @@
     "database": "superman_spending_production",
     "host": "127.0.0.1",
     "dialect": "mysql",
-    "jwt_encryption": "PleaseChange",
+    "jwt_encryption": "TheMiddleIsTheStartOfTheEnd",
     "jwt_expiration": "10000"
   }
 }

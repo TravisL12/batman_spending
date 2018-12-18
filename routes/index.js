@@ -1,7 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const { user, transaction } = require("../controllers");
+const multer = require("multer");
 const passport = require("passport");
+const upload = multer({ dest: "tmp/csv/" });
 require("./../middleware/passport")(passport);
 
 router.post("/user/create", user.create);
@@ -27,6 +29,12 @@ router.post(
   "/transactions",
   passport.authenticate("jwt", { session: false }),
   transaction.create
+);
+router.post(
+  "/transactions/import",
+  passport.authenticate("jwt", { session: false }),
+  upload.single("file"),
+  transaction.import
 );
 
 module.exports = router;
