@@ -30,8 +30,9 @@ module.exports = (sequelize, DataTypes) => {
       }
     }
   );
-  Category.associate = function(models) {
-    // associations can be defined here
+  Category.associate = ({ Transaction }) => {
+    Category.hasMany(Transaction, { foreignKey: "category_id" });
+    Category.hasMany(Transaction, { foreignKey: "subcategory_id" });
   };
   return Category;
 };

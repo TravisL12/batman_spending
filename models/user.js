@@ -62,8 +62,8 @@ module.exports = (sequelize, DataTypes) => {
     return json;
   };
 
-  User.associate = function(models) {
-    User.hasMany(models.Transaction, {
+  User.associate = ({ Transaction }) => {
+    User.hasMany(Transaction, {
       foreignKey: "user_id", // need this to properly hookup transactions
       as: "transactions"
     });

@@ -9,7 +9,9 @@ const TransactionController = {
     return Transaction.findAll({
       where: {
         user_id: user.id
-      }
+      },
+      limit: 100,
+      order: [["date", "DESC"]]
     })
       .then(transactions => {
         res.status(200).send(transactions);
