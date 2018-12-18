@@ -6,7 +6,13 @@
     "host": "127.0.0.1",
     "dialect": "mysql",
     "jwt_encryption": "TheMiddleIsTheStartOfTheEnd",
-    "jwt_expiration": "10000"
+    "jwt_expiration": "10000",
+    "pool": {
+      "max": 100,
+      "min": 0,
+      "idle": 20000,
+      "acquire": 20000
+    }
   },
   "test": {
     "username": "root",

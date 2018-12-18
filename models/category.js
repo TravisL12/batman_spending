@@ -21,7 +21,14 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: sequelize.literal("NOW()")
       }
     },
-    { timestamps: true }
+    { timestamps: true },
+    {
+      hooks: {
+        validationFailed: (instance, options, error) => {
+          console.warn(error);
+        }
+      }
+    }
   );
   Category.associate = function(models) {
     // associations can be defined here

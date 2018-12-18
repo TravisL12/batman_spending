@@ -20,20 +20,32 @@ const TransactionController = {
   },
 
   async import(req, res, next) {
+    const user = req.user.dataValues;
     const transactions = [];
+
     fs.createReadStream(req.file.path)
       .pipe(parse({ columns: true }))
-      .on("data", function(csvrow) {
+      .on("data", csvrow => {
         transactions.push(csvrow);
       })
-      .on("end", () => {
+      .on("end", async () => {
+        transactions.forEach(async transaction => {
+          await TransactionController.create(transaction, user).catch(err => {
+            console.log(err);
+            next();
+          });
+        });
         fs.unlinkSync(req.file.path);
-        res.status(200).send("Nice work!");
+        res.status(200).send(`Nice work! ${transactions.length} imported`);
       });
   },
 
   async create(data, user) {
-    const { description, payee, amount, date, category, subcategory } = data;
+    const description = data.description.replace(/\s+/g, " "); // Trim extra spaces
+    const amount = data.amount * 100;
+    const category = !data.category ? "None" : data.category;
+    const subcategory = !data.subcategory ? "None" : data.subcategory;
+    const { payee, date } = data;
 
     const createdAt = new Date();
     const updatedAt = new Date();
