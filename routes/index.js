@@ -28,7 +28,7 @@ router.get(
 router.post(
   "/transactions",
   passport.authenticate("jwt", { session: false }),
-  transaction.create
+  transaction.add
 );
 router.post(
   "/transactions/import",

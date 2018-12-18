@@ -2,7 +2,7 @@ const { Category, Transaction } = require("../models");
 const fs = require("fs");
 const parse = require("csv-parse");
 
-module.exports = {
+const TransactionController = {
   list(req, res) {
     const user = req.user.dataValues;
 
@@ -20,7 +20,6 @@ module.exports = {
   },
 
   async import(req, res, next) {
-    console.log("hey!");
     const transactions = [];
     fs.createReadStream(req.file.path)
       .pipe(parse({ columns: true }))
@@ -29,21 +28,12 @@ module.exports = {
       })
       .on("end", () => {
         fs.unlinkSync(req.file.path);
-        console.log(transactions);
         res.status(200).send("Nice work!");
       });
   },
 
-  async create(req, res) {
-    const user = req.user.dataValues;
-    const {
-      description,
-      payee,
-      amount,
-      date,
-      category,
-      subcategory
-    } = req.body;
+  async create(data, user) {
+    const { description, payee, amount, date, category, subcategory } = data;
 
     const createdAt = new Date();
     const updatedAt = new Date();
@@ -73,7 +63,12 @@ module.exports = {
       subcategory_id: subcategoryObj.id,
       createdAt,
       updatedAt
-    })
+    });
+  },
+
+  add(req, res) {
+    const user = req.user.dataValues;
+    TransactionController.create(req.body, user)
       .then(transaction => res.status(201).send(transaction))
       .catch(error => res.status(400).send(error));
   },
@@ -98,3 +93,5 @@ module.exports = {
       .catch(error => res.status(400).send(error));
   }
 };
+
+module.exports = TransactionController;
