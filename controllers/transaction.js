@@ -1,6 +1,7 @@
 const { Category, Transaction } = require("../models");
 const fs = require("fs");
 const parse = require("csv-parse");
+const transform = require("stream-transform");
 
 const TransactionController = {
   list(req, res) {
@@ -21,25 +22,25 @@ const TransactionController = {
       });
   },
 
-  async import(req, res, next) {
+  async import(req, res) {
     const user = req.user.dataValues;
-    const transactions = [];
+    const transformer = transform(function(row, next) {
+      TransactionController.create(row, user)
+        .then(() => {
+          next();
+        })
+        .catch(err => {
+          console.log(err);
+          next();
+        });
+    }).on("finish", () => {
+      fs.unlinkSync(req.file.path);
+      res.status(200).send(`Import Complete!`);
+    });
 
     fs.createReadStream(req.file.path)
       .pipe(parse({ columns: true }))
-      .on("data", csvrow => {
-        transactions.push(csvrow);
-      })
-      .on("end", async () => {
-        transactions.forEach(async transaction => {
-          await TransactionController.create(transaction, user).catch(err => {
-            console.log(err);
-            next();
-          });
-        });
-        fs.unlinkSync(req.file.path);
-        res.status(200).send(`Nice work! ${transactions.length} imported`);
-      });
+      .pipe(transformer);
   },
 
   async create(data, user) {

@@ -1,65 +1,37 @@
-// "use strict";
-// const fs = require("fs");
-// const parse = require("csv-parse");
-// const { Category } = require("../models");
+"use strict";
+const authService = require("../services/auth");
+const { transaction } = require("../controllers");
+const fs = require("fs");
+const parse = require("csv-parse");
+const transform = require("stream-transform");
 
-// function createTransaction(data, userId, categoryId, subcategoryId) {
-//   const { description, amount, date, payee } = data;
+module.exports = {
+  up: (queryInterface, Sequelize) => {
+    return authService.createUser({
+      name: "Travis",
+      email: `travis@travis.com`,
+      password: "password",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+    //   .then(async ({ dataValues }) => {
+    //     const stream = fs.createReadStream("seeders/data.csv");
+    //     const parser = parse({ columns: true });
+    //     const transformer = transform(function(row, next) {
+    //       transaction
+    //         .create(row, dataValues)
+    //         .then(() => {
+    //           next();
+    //         })
+    //         .catch(err => {
+    //           console.log(err);
+    //         });
+    //     });
 
-//   return {
-//     description,
-//     payee,
-//     amount: amount * 100,
-//     date: new Date(date),
-//     user_id: userId,
-//     category_id: categoryId,
-//     subcategory_id: subcategoryId,
-//     createdAt: new Date(),
-//     updatedAt: new Date()
-//   };
-// }
+    //     await stream.pipe(parser).pipe(transformer);
+    //     return;
+    //   });
+  },
 
-// const transactions = [];
-// fs.createReadStream("./data.csv")
-//   .pipe(parse({ columns: true }))
-//   .on("data", function(csvrow) {
-//     transactions.push(csvrow);
-//   });
-
-// module.exports = {
-//   up: (queryInterface, Sequelize) => {
-//     const transactionsWithUser = transactions.map(async data => {
-//       const [category, isCreated] = await Category.findOrCreate({
-//         where: {
-//           name: data.category
-//         }
-//       });
-//       const [subcategory, isSubCreated] = await Category.findOrCreate({
-//         where: {
-//           name: data.subcategory
-//         },
-//         defaults: {
-//           parent_category_id: category.id
-//         }
-//       });
-//       return createTransaction(data, 1, category.id, subcategory.id);
-//     });
-
-//     const results = Promise.all(transactionsWithUser);
-
-//     return queryInterface.bulkInsert("Transactions", results, {
-//       ignoreDuplicates: true,
-//       raw: true
-//     });
-//   },
-
-//   down: (queryInterface, Sequelize) => {
-//     /*
-//       Add reverting commands here.
-//       Return a promise to correctly handle asynchronicity.
-
-//       Example:
-//       return queryInterface.bulkDelete('People', null, {});
-//     */
-//   }
-// };
+  down: (queryInterface, Sequelize) => {}
+};
