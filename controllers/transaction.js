@@ -2,15 +2,26 @@ const { Category, Transaction } = require("../models");
 const fs = require("fs");
 const parse = require("csv-parse");
 const transform = require("stream-transform");
+const moment = require("moment");
 
 const TransactionController = {
   list(req, res) {
-    const user = req.user.dataValues;
+    const { user } = req;
+    const { year } = req.query;
+
+    const queryParams = {
+      user_id: user.id
+    };
+
+    if (year) {
+      queryParams.date = {
+        $gte: moment(+year, "YYYY").toDate(),
+        $lt: moment(+year + 1, "YYYY").toDate()
+      };
+    }
 
     return Transaction.findAll({
-      where: {
-        user_id: user.id
-      },
+      where: queryParams,
       limit: 100,
       order: [["date", "DESC"]]
     })
@@ -23,7 +34,7 @@ const TransactionController = {
   },
 
   async import(req, res) {
-    const user = req.user.dataValues;
+    const { user } = req;
     const transformer = transform(function(row, next) {
       TransactionController.create(row, user)
         .then(() => {
@@ -82,14 +93,14 @@ const TransactionController = {
   },
 
   add(req, res) {
-    const user = req.user.dataValues;
+    const { user } = req;
     TransactionController.create(req.body, user)
       .then(transaction => res.status(201).send(transaction))
       .catch(error => res.status(400).send(error));
   },
 
   getById(req, res) {
-    const user = req.user.dataValues;
+    const { user } = req;
 
     return Transaction.find({
       where: {
