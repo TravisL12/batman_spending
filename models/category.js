@@ -31,8 +31,14 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
   Category.associate = ({ Transaction }) => {
-    Category.hasMany(Transaction, { foreignKey: "category_id" });
-    Category.hasMany(Transaction, { foreignKey: "subcategory_id" });
+    Category.hasMany(Transaction, {
+      foreignKey: "category_id",
+      as: "transactions"
+    });
+    Category.hasMany(Transaction, {
+      foreignKey: "subcategory_id",
+      as: "transactions"
+    });
   };
   return Category;
 };
