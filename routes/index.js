@@ -10,18 +10,13 @@ const passport = require("passport");
 const upload = multer({ dest: "tmp/csv/" });
 require("./../middleware/passport")(passport);
 
-router.post("/users/login", userController.login);
-
 // USER
+router.post("/users/login", userController.login);
+router.post("/user/create", userController.create);
 router.get(
   "/user/:id",
   passport.authenticate("jwt", { session: false }),
   userController.getById
-);
-router.post(
-  "/user/create",
-  passport.authenticate("jwt", { session: false }),
-  userController.create
 );
 router.put(
   "/user/update",

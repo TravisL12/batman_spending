@@ -41,10 +41,10 @@ module.exports = {
 
     queryInterface.addConstraint(
       "transactions",
-      ["description", "date", "amount"],
+      ["description", "date", "amount", "user_id"],
       {
         type: "unique",
-        name: "unique_description_amount_date"
+        name: "unique_description_amount_date_user"
       }
     );
 

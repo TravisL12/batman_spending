@@ -30,7 +30,12 @@ const CategoryController = {
       group: ["Category.id", "Subcategory.id"]
     })
       .then(categories => {
-        res.status(200).send(categories);
+        res.status(200).send(
+          // Only return categories that have transactions from user
+          categories.filter(({ dataValues: category }) => {
+            return category.transactionCount > 0;
+          })
+        );
       })
       .catch(error => {
         res.status(400).send(error);
