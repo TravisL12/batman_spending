@@ -9,7 +9,6 @@ const config = require(__dirname + "/../config/config.json")[env];
 const db = {};
 
 config.define = {
-  timestamps: false,
   raw: true
 };
 

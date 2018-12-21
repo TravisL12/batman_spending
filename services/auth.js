@@ -32,7 +32,6 @@ const createUser = async userInfo => {
     userInfo.email = unique_key;
 
     [err, user] = await to(User.create(userInfo));
-
     if (err) TE("user already exists with that email");
 
     return user;
