@@ -1,49 +1,67 @@
 const express = require("express");
 const router = express.Router();
-const { user, transaction, category } = require("../controllers");
+const {
+  userController,
+  transactionController,
+  categoryController
+} = require("../controllers");
 const multer = require("multer");
 const passport = require("passport");
 const upload = multer({ dest: "tmp/csv/" });
 require("./../middleware/passport")(passport);
 
-router.post("/users/login", user.login);
+router.post("/users/login", userController.login);
 
 // USER
-router.post("/user/create", user.create);
+router.get(
+  "/user/:id",
+  passport.authenticate("jwt", { session: false }),
+  userController.getById
+);
+router.post(
+  "/user/create",
+  passport.authenticate("jwt", { session: false }),
+  userController.create
+);
 router.put(
   "/user/update",
   passport.authenticate("jwt", { session: false }),
-  user.update
+  userController.update
 );
 
 // TRANSACTIONS
 router.get(
   "/transactions",
   passport.authenticate("jwt", { session: false }),
-  transaction.list
+  transactionController.list
 );
 router.get(
   "/transactions/:id",
   passport.authenticate("jwt", { session: false }),
-  transaction.getById
+  transactionController.getById
 );
 router.post(
   "/transactions",
   passport.authenticate("jwt", { session: false }),
-  transaction.add
+  transactionController.add
 );
 router.post(
   "/transactions/import",
   passport.authenticate("jwt", { session: false }),
   upload.single("file"),
-  transaction.import
+  transactionController.import
 );
 
 // CATEGORIES
 router.get(
   "/categories",
   passport.authenticate("jwt", { session: false }),
-  category.list
+  categoryController.list
+);
+router.get(
+  "/categories/:id",
+  passport.authenticate("jwt", { session: false }),
+  categoryController.getById
 );
 
 module.exports = router;

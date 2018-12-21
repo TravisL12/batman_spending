@@ -4,11 +4,12 @@ const { to, ReE, ReS } = require("../services/utility");
 
 module.exports = {
   getById(req, res) {
-    return User.findById(req.params.id, {
+    return User.findByPk(req.params.id, {
       include: [
         {
           model: Transaction,
-          as: "transactions"
+          as: "transactions",
+          limit: 100
         }
       ]
     })
@@ -39,7 +40,7 @@ module.exports = {
   },
 
   update(req, res) {
-    return User.findById(req.params.id, {
+    return User.findByPk(req.params.id, {
       include: [
         {
           model: Transaction,
@@ -64,7 +65,7 @@ module.exports = {
   },
 
   delete(req, res) {
-    return User.findById(req.params.id)
+    return User.findByPk(req.params.id)
       .then(user => {
         if (!user) {
           return res.status(400).send({
