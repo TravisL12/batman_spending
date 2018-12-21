@@ -15,6 +15,7 @@
     "bcrypt": "^3.0.2",
     "bcrypt-promise": "^2.0.0",
     "body-parser": "*",
+    "cors": "^2.8.5",
     "csv": "^5.0.1",
     "express": "*",
     "multer": "^1.4.1",

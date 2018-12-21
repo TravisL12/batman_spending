@@ -8,7 +8,6 @@ module.exports = {
       include: [
         {
           model: Transaction,
-          as: "transactions",
           limit: 100
         }
       ]

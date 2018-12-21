@@ -11,7 +11,7 @@ const upload = multer({ dest: "tmp/csv/" });
 require("./../middleware/passport")(passport);
 
 // USER
-router.post("/users/login", userController.login);
+router.post("/login", userController.login);
 router.post("/user/create", userController.create);
 router.get(
   "/user/:id",
