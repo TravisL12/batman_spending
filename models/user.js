@@ -64,8 +64,7 @@ module.exports = (sequelize, DataTypes) => {
 
   User.associate = ({ Transaction }) => {
     User.hasMany(Transaction, {
-      foreignKey: "user_id", // need this to properly hookup transactions
-      as: "transactions"
+      foreignKey: "user_id"
     });
   };
 

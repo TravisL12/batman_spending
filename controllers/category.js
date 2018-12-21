@@ -9,12 +9,16 @@ const CategoryController = {
       attributes: {
         include: [
           [
-            sequelize.fn("COUNT", sequelize.col("transactions.category_id")),
-            "transactions"
+            sequelize.fn("COUNT", sequelize.col("transactions.id")),
+            "transactionCount"
           ]
         ]
       },
       include: [
+        {
+          model: Category,
+          as: "Subcategory"
+        },
         {
           model: Transaction,
           attributes: [],
@@ -23,7 +27,7 @@ const CategoryController = {
           }
         }
       ],
-      group: ["Category.id"]
+      group: ["Category.id", "Subcategory.id"]
     })
       .then(categories => {
         res.status(200).send(categories);
@@ -44,7 +48,10 @@ const CategoryController = {
             user_id: user.id
           }
         },
-        { model: Category }
+        {
+          model: Category,
+          as: "Subcategory"
+        }
       ]
     })
       .then(categories => {
