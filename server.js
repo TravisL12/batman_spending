@@ -4,8 +4,9 @@ const apiRoutes = require("./routes");
 const app = express(); // Please do not remove this line, since CLI uses this line as guidance to import new controllers
 const passport = require("passport");
 const cors = require("cors");
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+
+app.use(bodyParser.urlencoded({ extended: false, limit: "2mb" }));
+app.use(bodyParser.json({ limit: "2mb" }));
 
 const port = process.env.PORT || 3000;
 

@@ -56,7 +56,7 @@ const TransactionController = {
 
   async create(data, user) {
     const description = data.description.replace(/\s+/g, " "); // Trim extra spaces
-    const amount = data.amount * 100;
+    const amount = +data.amount.replace(/[$,]/g, "") * 100;
     const category = !data.category ? "None" : data.category;
     const subcategory = !data.subcategory ? "None" : data.subcategory;
     const { payee, date } = data;
