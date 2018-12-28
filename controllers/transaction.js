@@ -46,18 +46,16 @@ const TransactionController = {
       TransactionController.create(row, user)
         .then(next)
         .catch(err => {
-          console.log(err);
+          console.log(`${err.original.code} ${err.original.sqlMessage}`);
           next();
         });
-    }).on("finish", () => {
+    });
+
+    transformer.on("finish", () => {
+      const message = "Import Complete!";
+      console.log(message);
       fs.unlinkSync(req.file.path);
-      return ReS(
-        res,
-        {
-          message: "Import Complete!"
-        },
-        200
-      );
+      return ReS(res, { message }, 200);
     });
 
     fs.createReadStream(req.file.path)
@@ -66,11 +64,17 @@ const TransactionController = {
   },
 
   async create(data, user) {
-    const description = data.description.replace(/\s+/g, " "); // Trim extra spaces
-    const amount = +data.amount.replace(/[$,]/g, "") * 100;
-    const category = !data.category ? "None" : data.category;
-    const subcategory = !data.subcategory ? "None" : data.subcategory;
-    const { payee, date } = data;
+    let category = data["Master Category"];
+    let subcategory = data["Subcategory"];
+    let date = data["Date"];
+    let payee = data["Payee"];
+    let description = data["Description"];
+    let amount = data["Amount"];
+
+    description = description.replace(/\s+/g, " "); // Trim extra spaces
+    amount = +amount.replace(/[$,]/g, "") * 100;
+    category = !category ? "None" : category;
+    subcategory = !subcategory ? "None" : subcategory;
 
     const createdAt = new Date();
     const updatedAt = new Date();
