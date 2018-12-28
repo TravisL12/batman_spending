@@ -13,15 +13,20 @@ require("./../middleware/passport")(passport);
 // USER
 router.post("/login", userController.login);
 router.post("/user/create", userController.create);
-router.get(
-  "/user/:id",
-  passport.authenticate("jwt", { session: false }),
-  userController.getById
-);
 router.put(
   "/user/update",
   passport.authenticate("jwt", { session: false }),
   userController.update
+);
+router.get(
+  "/user/profile",
+  passport.authenticate("jwt", { session: false }),
+  userController.profile
+);
+router.get(
+  "/user/:id",
+  passport.authenticate("jwt", { session: false }),
+  userController.getById
 );
 
 // TRANSACTIONS

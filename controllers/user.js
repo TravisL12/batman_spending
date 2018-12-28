@@ -3,6 +3,17 @@ const authService = require("../services/auth");
 const { to, ReE, ReS } = require("../services/utility");
 
 module.exports = {
+  async profile(req, res) {
+    const { user } = req;
+    const [err, recentTransactions] = await to(
+      Transaction.getLast(50, user.id)
+    );
+
+    return err
+      ? ReE(res, err, 422)
+      : ReS(res, { user, recentTransactions }, 200);
+  },
+
   getById(req, res) {
     return User.findByPk(req.params.id, {
       include: [
@@ -33,17 +44,18 @@ module.exports = {
 
   async create(req, res) {
     const [err, user] = await to(authService.createUser(req.body));
-    if (err) return ReE(res, err, 422);
 
-    return ReS(
-      res,
-      {
-        message: "Successfully created new user.",
-        user: user.toWeb(),
-        token: user.getJWT()
-      },
-      201
-    );
+    return err
+      ? ReE(res, err, 422)
+      : ReS(
+          res,
+          {
+            message: "Successfully created new user.",
+            user: user.toWeb(),
+            token: user.getJWT()
+          },
+          201
+        );
   },
 
   update(req, res) {
