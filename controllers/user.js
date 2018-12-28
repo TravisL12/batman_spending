@@ -8,19 +8,27 @@ module.exports = {
       include: [
         {
           model: Transaction,
-          limit: 100
+          limit: 1000
         }
       ]
     })
       .then(user => {
         if (!user) {
-          return res.status(404).send({
-            message: "User Not Found"
-          });
+          return ReE(res, { message: "User not found" }, 404);
         }
-        return res.status(200).send(user);
+        const { name, email, Transactions } = user;
+        return ReS(
+          res,
+          {
+            user: { name, email },
+            transactions: Transactions
+          },
+          200
+        );
       })
-      .catch(error => res.status(400).send(error));
+      .catch(error => {
+        return ReE(res, error, 422);
+      });
   },
 
   async create(req, res) {

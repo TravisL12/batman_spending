@@ -3,6 +3,7 @@ const fs = require("fs");
 const parse = require("csv-parse");
 const transform = require("stream-transform");
 const moment = require("moment");
+const { to, ReE, ReS } = require("../services/utility");
 
 const TransactionController = {
   list(req, res) {
@@ -26,10 +27,16 @@ const TransactionController = {
       order: [["date", "DESC"]]
     })
       .then(transactions => {
-        res.status(200).send(transactions);
+        return ReS(
+          res,
+          {
+            transactions
+          },
+          200
+        );
       })
       .catch(error => {
-        res.status(400).send(error);
+        return ReE(res, error);
       });
   },
 
@@ -37,16 +44,20 @@ const TransactionController = {
     const { user } = req;
     const transformer = transform(function(row, next) {
       TransactionController.create(row, user)
-        .then(() => {
-          next();
-        })
+        .then(next)
         .catch(err => {
           console.log(err);
           next();
         });
     }).on("finish", () => {
       fs.unlinkSync(req.file.path);
-      res.status(200).send(`Import Complete!`);
+      return ReS(
+        res,
+        {
+          message: "Import Complete!"
+        },
+        200
+      );
     });
 
     fs.createReadStream(req.file.path)
@@ -95,8 +106,12 @@ const TransactionController = {
   add(req, res) {
     const { user } = req;
     TransactionController.create(req.body, user)
-      .then(transaction => res.status(201).send(transaction))
-      .catch(error => res.status(400).send(error));
+      .then(transaction => {
+        return ReS(res, { transaction }, 201);
+      })
+      .catch(error => {
+        return ReE(res, error);
+      });
   },
 
   getById(req, res) {
@@ -110,13 +125,13 @@ const TransactionController = {
     })
       .then(transaction => {
         if (!transaction) {
-          return res.status(404).send({
-            message: "Transaction Not Found"
-          });
+          return ReE(res, { message: "Transaction Not Found" }, 404);
         }
-        return res.status(200).send(transaction);
+        return ReS(res, { transaction }, 201);
       })
-      .catch(error => res.status(400).send(error));
+      .catch(error => {
+        return ReE(res, error);
+      });
   }
 };
 
