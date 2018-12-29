@@ -36,7 +36,6 @@ const TransactionController = {
 
   async import(req, res) {
     const { user } = req;
-    console.log(user.id, "user id");
     const transformer = transform(function(row, next) {
       TransactionController.create(row, user)
         .then(() => {
@@ -67,7 +66,7 @@ const TransactionController = {
     let amount = data["Amount"] || data["amount"];
 
     description = description.replace(/\s+/g, " "); // Trim extra spaces
-    amount = +amount.replace(/[$,]/g, "") * 100;
+    amount = +amount.replace(/[$,]/g, "") * 100; // remove $ or ',' separators
     category = !category ? "None" : category;
     subcategory = !subcategory ? "None" : subcategory;
 
