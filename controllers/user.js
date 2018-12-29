@@ -5,13 +5,16 @@ const { to, ReE, ReS } = require("../services/utility");
 module.exports = {
   async profile(req, res) {
     const { user } = req;
-    const [err, recentTransactions] = await to(
-      Transaction.getLast(50, user.id)
+    const recentRequest = Transaction.getPrevious(user.id);
+    const monthRequest = Transaction.getMonth(user.id, 12, 2017);
+
+    const [err, [recentTransactions, monthTransactions]] = await to(
+      Promise.all([recentRequest, monthRequest])
     );
 
     return err
       ? ReE(res, err, 422)
-      : ReS(res, { user, recentTransactions }, 200);
+      : ReS(res, { user, recentTransactions, monthTransactions }, 200);
   },
 
   getById(req, res) {
