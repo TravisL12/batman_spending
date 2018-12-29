@@ -14,35 +14,14 @@ module.exports = {
 
     return err
       ? ReE(res, err, 422)
-      : ReS(res, { user, transactions: { recent, month } }, 200);
-  },
-
-  getById(req, res) {
-    return User.findByPk(req.params.id, {
-      include: [
-        {
-          model: Transaction,
-          limit: 1000
-        }
-      ]
-    })
-      .then(user => {
-        if (!user) {
-          return ReE(res, { message: "User not found" }, 404);
-        }
-        const { name, email, Transactions } = user;
-        return ReS(
+      : ReS(
           res,
           {
-            user: { name, email },
-            transactions: Transactions
+            user: user.public(),
+            transactions: { recent, month }
           },
           200
         );
-      })
-      .catch(error => {
-        return ReE(res, error, 422);
-      });
   },
 
   async create(req, res) {

@@ -23,11 +23,6 @@ router.get(
   passport.authenticate("jwt", { session: false }),
   userController.profile
 );
-router.get(
-  "/user/:id",
-  passport.authenticate("jwt", { session: false }),
-  userController.getById
-);
 
 // TRANSACTIONS
 router.get(

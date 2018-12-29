@@ -57,9 +57,16 @@ module.exports = (sequelize, DataTypes) => {
     );
   };
 
-  User.prototype.toWeb = function(pw) {
+  User.prototype.toWeb = function() {
     let json = this.toJSON();
     return json;
+  };
+
+  User.prototype.public = function() {
+    return {
+      name: this.name,
+      email: this.email
+    };
   };
 
   User.associate = ({ Transaction }) => {

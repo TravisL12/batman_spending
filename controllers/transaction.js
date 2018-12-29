@@ -27,13 +27,7 @@ const TransactionController = {
       order: [["date", "DESC"]]
     })
       .then(transactions => {
-        return ReS(
-          res,
-          {
-            transactions
-          },
-          200
-        );
+        return ReS(res, { transactions }, 200);
       })
       .catch(error => {
         return ReE(res, error);
@@ -42,15 +36,17 @@ const TransactionController = {
 
   async import(req, res) {
     const { user } = req;
+    console.log(user.id, "user id");
     const transformer = transform(function(row, next) {
       TransactionController.create(row, user)
-        .then(next)
-        .catch(err => {
+        .then(() => {
+          next();
+        })
+        .catch(() => {
+          console.log("error");
           next();
         });
-    });
-
-    transformer.on("finish", () => {
+    }).on("finish", () => {
       const message = "Import Complete!";
       console.log(message);
       fs.unlinkSync(req.file.path);
@@ -63,12 +59,12 @@ const TransactionController = {
   },
 
   async create(data, user) {
-    let category = data["Master Category"];
-    let subcategory = data["Subcategory"];
-    let date = data["Date"];
-    let payee = data["Payee"];
-    let description = data["Description"];
-    let amount = data["Amount"];
+    let category = data["Master Category"] || data["category"];
+    let subcategory = data["Subcategory"] || data["subcategory"];
+    let date = data["Date"] || data["date"];
+    let payee = data["Payee"] || data["payee"];
+    let description = data["Description"] || data["description"];
+    let amount = data["Amount"] || data["amount"];
 
     description = description.replace(/\s+/g, " "); // Trim extra spaces
     amount = +amount.replace(/[$,]/g, "") * 100;
