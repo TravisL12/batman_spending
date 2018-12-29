@@ -46,7 +46,6 @@ const TransactionController = {
       TransactionController.create(row, user)
         .then(next)
         .catch(err => {
-          console.log(`${err.original.code} ${err.original.sqlMessage}`);
           next();
         });
     });
