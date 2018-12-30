@@ -6,7 +6,7 @@ module.exports = {
   async profile(req, res) {
     const { user } = req;
     const recentTransactions = Transaction.getPrevious(user.id);
-    const monthTransactions = Transaction.getMonth(user.id, 12, 2017);
+    const monthTransactions = Transaction.getMonth(user.id);
 
     const [err, [recent, month]] = await to(
       Promise.all([recentTransactions, monthTransactions])
