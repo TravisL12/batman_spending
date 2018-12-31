@@ -1,7 +1,38 @@
 const { Category, Transaction } = require("../models");
 const sequelize = require("sequelize");
+const moment = require("moment");
+const { to, ReE, ReS } = require("../services/utility");
 
 const CategoryController = {
+  /**
+   * Get specific month of year spending
+   * Default to current month and year
+   */
+  getMonth(userId, month, year) {
+    const startMonth = month || new Date().getMonth() + 1;
+    const startYear = year || new Date().getFullYear();
+
+    const startDate = moment(`${startYear} ${startMonth}`, "YYYY MM");
+    const endDate = moment(startDate).add(1, "M"); // https://stackoverflow.com/questions/33440646/how-to-properly-add-1-month-from-now-to-current-date-in-moment-js
+
+    return Category.findAll({
+      include: [
+        {
+          model: Transaction,
+          as: "Transactions",
+          where: {
+            user_id: userId,
+            date: {
+              $gte: startDate,
+              $lt: endDate
+            }
+          }
+        }
+      ],
+      group: ["Category.id", "Transactions.id"]
+    });
+  },
+
   list(req, res) {
     const { user } = req;
 
@@ -30,14 +61,14 @@ const CategoryController = {
       group: ["Category.id", "Subcategory.id"]
     })
       .then(categories => {
-        res.status(200).send(
-          // Only return categories that have transactions from user
-          categories.filter(({ dataValues: category }) => {
-            return category.transactionCount > 0;
-          })
-        );
+        const filteredCats = categories.filter(({ dataValues: category }) => {
+          return category.transactionCount > 0;
+        });
+
+        return ReS(res, { categories: filteredCats }, 200);
       })
       .catch(error => {
+        console.log(error);
         res.status(400).send(error);
       });
   },

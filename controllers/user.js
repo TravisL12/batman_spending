@@ -1,19 +1,18 @@
-const { User, Category, Transaction } = require("../models");
+const { User, Transaction } = require("../models");
+const categoryController = require("./category");
 const authService = require("../services/auth");
 const { to, ReE, ReS } = require("../services/utility");
 
 module.exports = {
   async profile(req, res) {
     const { user } = req;
-    const [err1, recent] = await to(Transaction.getPrevious(user.id));
-    const [err2, month] = await to(Transaction.getMonth(user.id));
-    const [err3, categories] = await to(Category.getMonth(user.id));
+    const recentTransactions = Transaction.getPrevious(user.id);
+    const monthTransactions = Transaction.getMonth(user.id);
+    const categoryData = categoryController.getMonth(user.id);
 
-    // const [err, [recent, month, categories]] = await to(
-    //   Promise.all([recentTransactions, monthTransactions, categoryData])
-    // );
-
-    const err = err1 || err2 || err3;
+    const [err, [recent, month, categories]] = await to(
+      Promise.all([recentTransactions, monthTransactions, categoryData])
+    );
 
     return err
       ? ReE(res, err, 422)
