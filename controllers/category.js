@@ -2,6 +2,7 @@ const { Category, Transaction } = require("../models");
 const sequelize = require("sequelize");
 const moment = require("moment");
 const { to, ReE, ReS } = require("../services/utility");
+const Op = sequelize.Op;
 
 const CategoryController = {
   /**
@@ -22,6 +23,9 @@ const CategoryController = {
           as: "Transactions",
           where: {
             user_id: userId,
+            category_id: {
+              [Op.not]: 254 // "Outgoing Transfers"
+            },
             date: {
               $gte: startDate,
               $lt: endDate

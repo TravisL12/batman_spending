@@ -16,9 +16,9 @@ module.exports = {
     if (errTransactions) return ReE(res, errTransactions, 422);
 
     // Get category spending of past months
-    const numMonths = 4;
-    const categoryFetch = [];
-    const categoryData = [];
+    const numMonths = 5;
+    const categoryFetch = []; // container for db data
+    const categoryData = []; // container to be sent in response
     for (let i = 0; i < numMonths; i++) {
       const date = moment(new Date()).subtract(i, "M");
       categoryData.push({ month: date.month(), year: date.year() });
@@ -46,7 +46,7 @@ module.exports = {
 
         return data;
       })
-      .reverse();
+      .reverse(); // display data old -> new (ascending dates)
 
     return ReS(
       res,
