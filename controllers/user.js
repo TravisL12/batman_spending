@@ -15,8 +15,8 @@ module.exports = {
     );
     if (errTransactions) return ReE(res, errTransactions, 422);
 
-    // Get category spending of past 3 (numMonths) months
-    const numMonths = 3;
+    // Get category spending of past months
+    const numMonths = 4;
     const categoryFetch = [];
     const categoryData = [];
     for (let i = 0; i < numMonths; i++) {
@@ -32,10 +32,12 @@ module.exports = {
     );
     if (errCategories) return ReE(res, errCategories, 422);
 
-    const categories = categoryData.map((data, idx) => {
-      data.categories = categoriesResponse[idx];
-      return data;
-    });
+    const categories = categoryData
+      .map((data, idx) => {
+        data.categories = categoriesResponse[idx];
+        return data;
+      })
+      .reverse();
 
     return ReS(
       res,
