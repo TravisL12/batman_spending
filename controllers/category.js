@@ -29,7 +29,8 @@ const CategoryController = {
           }
         }
       ],
-      group: ["Category.id", "Transactions.id"]
+      group: ["Category.id", "Transactions.id"],
+      order: [["name", "ASC"]]
     });
   },
 
