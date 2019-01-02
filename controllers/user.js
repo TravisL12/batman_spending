@@ -32,9 +32,18 @@ module.exports = {
     );
     if (errCategories) return ReE(res, errCategories, 422);
 
-    const categories = categoryData
+    const categoryIds = {}; // group category ID's for direct comparisons
+    const monthData = categoryData
       .map((data, idx) => {
-        data.categories = categoriesResponse[idx];
+        data.categories = {};
+        categoriesResponse[idx].forEach(category => {
+          if (!categoryIds.hasOwnProperty(category.id)) {
+            categoryIds[category.id] = category.name;
+          }
+
+          data.categories[category.id] = category;
+        });
+
         return data;
       })
       .reverse();
@@ -44,7 +53,7 @@ module.exports = {
       {
         user: user.public(),
         transactions: { recent, month },
-        categories
+        categories: { idGroup: categoryIds, monthData }
       },
       200
     );
