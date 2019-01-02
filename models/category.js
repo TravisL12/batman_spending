@@ -1,4 +1,5 @@
 "use strict";
+
 module.exports = (sequelize, DataTypes) => {
   const Category = sequelize.define(
     "Category",
@@ -30,16 +31,19 @@ module.exports = (sequelize, DataTypes) => {
       }
     }
   );
+
   Category.associate = ({ Transaction }) => {
     Category.hasMany(Transaction, {
-      foreignKey: "category_id"
+      foreignKey: "category_id",
+      as: "Transactions"
     });
     Category.hasMany(Transaction, {
       foreignKey: "subcategory_id",
       as: "Subtransactions"
     });
     Category.belongsTo(Category, {
-      foreignKey: "parent_category_id"
+      foreignKey: "parent_category_id",
+      as: "Category"
     });
     Category.hasMany(Category, {
       foreignKey: "parent_category_id",

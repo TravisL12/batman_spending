@@ -1,5 +1,7 @@
 const { User, Transaction } = require("../models");
+const categoryController = require("./category");
 const authService = require("../services/auth");
+const moment = require("moment");
 const { to, ReE, ReS } = require("../services/utility");
 
 module.exports = {
@@ -8,20 +10,44 @@ module.exports = {
     const recentTransactions = Transaction.getPrevious(user.id);
     const monthTransactions = Transaction.getMonth(user.id);
 
-    const [err, [recent, month]] = await to(
+    const [errTransactions, [recent, month]] = await to(
       Promise.all([recentTransactions, monthTransactions])
     );
+    if (errTransactions) return ReE(res, errTransactions, 422);
 
-    return err
-      ? ReE(res, err, 422)
-      : ReS(
-          res,
-          {
-            user: user.public(),
-            transactions: { recent, month }
-          },
-          200
-        );
+    // Get category spending of past months
+    const numMonths = 4;
+    const categoryFetch = [];
+    const categoryData = [];
+    for (let i = 0; i < numMonths; i++) {
+      const date = moment(new Date()).subtract(i, "M");
+      categoryData.push({ month: date.month(), year: date.year() });
+      categoryFetch.push(
+        categoryController.getMonth(user.id, date.month(), date.year())
+      );
+    }
+
+    const [errCategories, categoriesResponse] = await to(
+      Promise.all(categoryFetch)
+    );
+    if (errCategories) return ReE(res, errCategories, 422);
+
+    const categories = categoryData
+      .map((data, idx) => {
+        data.categories = categoriesResponse[idx];
+        return data;
+      })
+      .reverse();
+
+    return ReS(
+      res,
+      {
+        user: user.public(),
+        transactions: { recent, month },
+        categories
+      },
+      200
+    );
   },
 
   async create(req, res) {
