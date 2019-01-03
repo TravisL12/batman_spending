@@ -16,7 +16,7 @@ module.exports = {
     if (errTransactions) return ReE(res, errTransactions, 422);
 
     // Get category spending of past months
-    const numMonths = 5;
+    const numMonths = 12;
     const categoryFetch = []; // container for db data
     const categoryData = []; // container to be sent in response
     for (let i = 0; i < numMonths; i++) {
