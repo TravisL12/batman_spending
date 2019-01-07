@@ -19,14 +19,14 @@ module.exports = {
       return new Date(trans.date).getFullYear();
     });
 
-    // Filter by month
-    Object.keys(transactions).forEach(year => {
+    _.forEach(transactions, (t, year) => {
+      // Filter by month
       transactions[year] = _.groupBy(transactions[year], trans => {
         return new Date(trans.date).getMonth();
       });
 
-      // Filter by day (date)
-      Object.keys(transactions[year]).forEach(data => {
+      _.forEach(transactions[year], (t2, data) => {
+        // Filter by day (date)
         transactions[year][data] = _.groupBy(
           transactions[year][data],
           trans => {
