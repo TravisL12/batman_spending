@@ -1,6 +1,7 @@
 const { User, Transaction } = require("../models");
 const categoryController = require("./category");
 const authService = require("../services/auth");
+const _ = require("lodash");
 const moment = require("moment");
 const { to, ReE, ReS } = require("../services/utility");
 
@@ -8,52 +9,20 @@ module.exports = {
   async profile(req, res) {
     const { user } = req;
     const recentTransactions = Transaction.getPrevious(user.id);
-    const monthTransactions = Transaction.getMonth(user.id);
+    const monthTransactions = Transaction.getMonth(user.id, 5);
 
-    const [errTransactions, [recent, month]] = await to(
+    const [errTransactions, [recent, monthData]] = await to(
       Promise.all([recentTransactions, monthTransactions])
     );
     if (errTransactions) return ReE(res, errTransactions, 422);
 
-    // Get category spending of past months
-    const numMonths = 12;
-    const categoryFetch = []; // container for db data
-    const categoryData = []; // container to be sent in response
-    for (let i = 0; i < numMonths; i++) {
-      const date = moment(new Date()).subtract(i, "M");
-      categoryData.push({ month: date.month(), year: date.year() });
-      categoryFetch.push(
-        categoryController.getMonth(user.id, date.month(), date.year())
-      );
-    }
-
-    const [errCategories, categoriesResponse] = await to(
-      Promise.all(categoryFetch)
-    );
-    if (errCategories) return ReE(res, errCategories, 422);
-
-    const categoryIds = {}; // group category ID's for direct comparisons
-    const monthData = categoryData
-      .map((data, idx) => {
-        data.categories = {};
-        categoriesResponse[idx].forEach(category => {
-          if (!categoryIds.hasOwnProperty(category.id)) {
-            categoryIds[category.id] = category.name;
-          }
-
-          data.categories[category.id] = category;
-        });
-
-        return data;
-      })
-      .reverse(); // display data old -> new (ascending dates)
+    const month = _.groupBy(monthData, "date");
 
     return ReS(
       res,
       {
         user: user.public(),
-        transactions: { recent, month },
-        categories: { idGroup: categoryIds, monthData }
+        transactions: { recent, month }
       },
       200
     );

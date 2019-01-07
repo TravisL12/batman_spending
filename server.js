@@ -8,7 +8,7 @@ const cors = require("cors");
 app.use(bodyParser.urlencoded({ extended: false, limit: "2mb" }));
 app.use(bodyParser.json({ limit: "2mb" }));
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3131;
 
 //Passport
 app.use(passport.initialize());

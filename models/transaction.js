@@ -35,12 +35,12 @@ module.exports = (sequelize, DataTypes) => {
    * Get specific month of year spending
    * Default to current month and year
    */
-  Transaction.getMonth = function(userId, month, year) {
-    const startMonth = month || new Date().getMonth() + 1;
-    const startYear = year || new Date().getFullYear();
+  Transaction.getMonth = function(userId, months = 1) {
+    const startMonth = new Date().getMonth() + 1;
+    const startYear = new Date().getFullYear();
 
-    const startDate = moment(`${startYear} ${startMonth}`, "YYYY MM");
-    const endDate = moment(startDate).add(1, "M"); // https://stackoverflow.com/questions/33440646/how-to-properly-add-1-month-from-now-to-current-date-in-moment-js
+    const endDate = moment(`${startYear} ${startMonth}`, "YYYY MM").add(1, "M");
+    const startDate = moment(endDate).subtract(months, "M"); // https://stackoverflow.com/questions/33440646/how-to-properly-add-1-month-from-now-to-current-date-in-moment-js
 
     return Transaction.findAll({
       where: {
