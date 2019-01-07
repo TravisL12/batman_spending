@@ -22,7 +22,7 @@ module.exports = {
     _.forEach(transactions, (t, year) => {
       // Filter by month
       transactions[year] = _.groupBy(transactions[year], trans => {
-        return new Date(trans.date).getMonth();
+        return new Date(trans.date).getMonth() + 1;
       });
 
       _.forEach(transactions[year], (t2, data) => {
