@@ -8,24 +8,35 @@ const { to, ReE, ReS } = require("../services/utility");
 module.exports = {
   async profile(req, res) {
     const { user } = req;
-    const recentTransactions = Transaction.getPrevious(user.id);
-    const monthTransactions = Transaction.getMonth(user.id, 5);
-
-    const [errTransactions, [recent, monthData]] = await to(
-      Promise.all([recentTransactions, monthTransactions])
+    const yearsBack = 10;
+    const [errTransactions, transactionData] = await to(
+      Transaction.getMonth(user.id, yearsBack * 12)
     );
     if (errTransactions) return ReE(res, errTransactions, 422);
 
-    const month = _.groupBy(monthData, "date");
+    // Filter by year
+    let transactions = _.groupBy(transactionData, trans => {
+      return new Date(trans.date).getFullYear();
+    });
 
-    return ReS(
-      res,
-      {
-        user: user.public(),
-        transactions: { recent, month }
-      },
-      200
-    );
+    // Filter by month
+    Object.keys(transactions).forEach(year => {
+      transactions[year] = _.groupBy(transactions[year], trans => {
+        return new Date(trans.date).getMonth();
+      });
+
+      // Filter by day (date)
+      Object.keys(transactions[year]).forEach(data => {
+        transactions[year][data] = _.groupBy(
+          transactions[year][data],
+          trans => {
+            return new Date(trans.date).getDate();
+          }
+        );
+      });
+    });
+
+    return ReS(res, { user: user.public(), transactions }, 200);
   },
 
   async create(req, res) {
