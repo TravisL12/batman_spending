@@ -17,20 +17,20 @@ module.exports = {
     if (errTransactions) return ReE(res, errTransactions, 422);
 
     // Filter by year
-    let transactions = _.groupBy(transactionData, trans => {
+    const transactions = _.groupBy(transactionData, trans => {
       return new Date(trans.date).getFullYear();
     });
 
-    _.forEach(transactions, (t, year) => {
+    _.forEach(transactions, (tYear, year) => {
       // Filter by month
       transactions[year] = _.groupBy(transactions[year], trans => {
         return new Date(trans.date).getMonth() + 1;
       });
 
-      _.forEach(transactions[year], data => {
+      _.forEach(transactions[year], (tMonth, month) => {
         // Filter by day (date)
-        transactions[year][data] = _.groupBy(
-          transactions[year][data],
+        transactions[year][month] = _.groupBy(
+          transactions[year][month],
           trans => {
             return new Date(trans.date).getDate();
           }
