@@ -29,11 +29,14 @@ const CategoryController = {
     // Concatenate all categories from response into one object
     // { 1: 'Taxes', 3: 'Food', 11: 'Gas' ... }
     const keys = _.keyBy(_.concat(..._.map(monthData, "categories")), "id");
-    const group = (group, { name }, id) => {
-      group[id] = name;
-      return group;
-    };
-    const idGroup = _.reduce(keys, group, {});
+    const idGroup = _.reduce(
+      keys,
+      (group, { name }, id) => {
+        group[id] = name;
+        return group;
+      },
+      {}
+    );
 
     return ReS(
       res,
