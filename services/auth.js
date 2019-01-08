@@ -1,6 +1,6 @@
 const { User } = require("../models");
 const validator = require("validator");
-const { to, TE } = require("../services/utility");
+const { to, TE } = require("../services/response");
 const jwt = require("jsonwebtoken");
 
 const getUniqueKeyFromBody = function(body) {

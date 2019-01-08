@@ -2,7 +2,7 @@
 
 const bcrypt = require("bcrypt");
 const bcrypt_p = require("bcrypt-promise");
-const { TE, to } = require("../services/utility");
+const { TE, to } = require("../services/response");
 const jwt = require("jsonwebtoken");
 const env = process.env.NODE_ENV || "development";
 const config = require(__dirname + "/../config/config.json")[env];

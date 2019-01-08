@@ -1,16 +1,18 @@
 const { User, Transaction } = require("../models");
-const categoryController = require("./category");
 const authService = require("../services/auth");
 const _ = require("lodash");
-const moment = require("moment");
-const { to, ReE, ReS } = require("../services/utility");
+const { dateRange } = require("../services/utility");
+const { to, ReE, ReS } = require("../services/response");
 
 module.exports = {
   async profile(req, res) {
     const { user } = req;
-    const yearsBack = 10;
+    const yearsBack = 1;
+    const options = dateRange(yearsBack * 12);
+    options.excludeCategoryIds = [254]; // Outgoing transfers
+
     const [errTransactions, transactionData] = await to(
-      Transaction.getMonth(user.id, yearsBack * 12)
+      Transaction.getMonth(user.id, options)
     );
     if (errTransactions) return ReE(res, errTransactions, 422);
 

@@ -2,7 +2,7 @@ const { ExtractJwt, Strategy } = require("passport-jwt");
 const { User } = require("../models");
 const env = process.env.NODE_ENV || "development";
 const config = require(__dirname + "/../config/config.json")[env];
-const { to } = require("../services/utility");
+const { to } = require("../services/response");
 
 module.exports = function(passport) {
   var opts = {};
