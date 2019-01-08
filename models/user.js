@@ -69,8 +69,11 @@ module.exports = (sequelize, DataTypes) => {
     };
   };
 
-  User.associate = ({ Transaction }) => {
+  User.associate = ({ Transaction, Category }) => {
     User.hasMany(Transaction, {
+      foreignKey: "user_id"
+    });
+    User.hasMany(Category, {
       foreignKey: "user_id"
     });
   };

@@ -54,6 +54,11 @@ router.get(
   categoryController.list
 );
 router.get(
+  "/categories/compare",
+  passport.authenticate("jwt", { session: false }),
+  categoryController.compare
+);
+router.get(
   "/categories/:id",
   passport.authenticate("jwt", { session: false }),
   categoryController.getById

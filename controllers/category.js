@@ -1,10 +1,47 @@
 const { Category, Transaction } = require("../models");
 const sequelize = require("sequelize");
 const moment = require("moment");
+const _ = require("lodash");
 const { to, ReE, ReS } = require("../services/response");
 const Op = sequelize.Op;
 
 const CategoryController = {
+  async compare(req, res) {
+    const { user } = req;
+
+    // Get category spending of past months
+    const numMonths = 3;
+    const monthData = [];
+    for (let i = 0; i < numMonths; i++) {
+      const date = moment(new Date()).subtract(i, "M");
+      const [err, categories] = await to(
+        CategoryController.getMonth(user.id, date.month(), date.year())
+      );
+      if (err) return ReE(res, err, 422);
+
+      monthData.push({
+        month: date.month(),
+        year: date.year(),
+        categories
+      });
+    }
+
+    // Concatenate all categories from response into one object
+    // { 1: 'Taxes', 3: 'Food', 11: 'Gas' ... }
+    const keys = _.keyBy(_.concat(..._.map(monthData, "categories")), "id");
+    const group = (group, { name }, id) => {
+      group[id] = name;
+      return group;
+    };
+    const idGroup = _.reduce(keys, group, {});
+
+    return ReS(
+      res,
+      { categories: { idGroup, monthData: monthData.reverse() } },
+      200
+    );
+  },
+
   /**
    * Get specific month of year spending
    * Default to current month and year

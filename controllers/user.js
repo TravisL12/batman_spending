@@ -27,7 +27,7 @@ module.exports = {
         return new Date(trans.date).getMonth() + 1;
       });
 
-      _.forEach(transactions[year], (t2, data) => {
+      _.forEach(transactions[year], data => {
         // Filter by day (date)
         transactions[year][data] = _.groupBy(
           transactions[year][data],
@@ -38,7 +38,7 @@ module.exports = {
       });
     });
 
-    return ReS(res, { user: user.public(), transactions }, 200);
+    return ReS(res, { transactions }, 200);
   },
 
   async create(req, res) {

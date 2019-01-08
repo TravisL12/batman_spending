@@ -75,16 +75,22 @@ const TransactionController = {
 
     const [categoryObj, isCreated] = await Category.findOrCreate({
       where: {
-        name: category
+        name: category,
+        user_id: user.id
+      },
+      defaults: {
+        user_id: user.id
       }
     });
 
     const [subcategoryObj, isSubCreated] = await Category.findOrCreate({
       where: {
-        name: subcategory
+        name: subcategory,
+        user_id: user.id
       },
       defaults: {
-        parent_category_id: categoryObj.id
+        parent_category_id: categoryObj.id,
+        user_id: user.id
       }
     });
 
