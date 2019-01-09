@@ -2,10 +2,49 @@ const { Category, Transaction } = require("../models");
 const fs = require("fs");
 const parse = require("csv-parse");
 const transform = require("stream-transform");
+const _ = require("lodash");
+const { dateRange } = require("../services/utility");
 const moment = require("moment");
 const { to, ReE, ReS } = require("../services/response");
 
 const TransactionController = {
+  async monthSpending(req, res) {
+    const { user } = req;
+    const { year, month } = req.params;
+
+    const options = dateRange(year, month);
+    options.excludeCategoryIds = [254]; // Outgoing transfers
+
+    const [errTransactions, transactionData] = await to(
+      Transaction.getMonth(user.id, options)
+    );
+    if (errTransactions) return ReE(res, errTransactions, 422);
+
+    // Filter by year
+    const transactions = _.groupBy(transactionData, trans => {
+      return new Date(trans.date).getFullYear();
+    });
+
+    _.forEach(transactions, (tYear, year) => {
+      // Filter by month
+      transactions[year] = _.groupBy(transactions[year], trans => {
+        return new Date(trans.date).getMonth() + 1;
+      });
+
+      _.forEach(transactions[year], (tMonth, month) => {
+        // Filter by day (date)
+        transactions[year][month] = _.groupBy(
+          transactions[year][month],
+          trans => {
+            return new Date(trans.date).getDate();
+          }
+        );
+      });
+    });
+
+    return ReS(res, { transactions }, 200);
+  },
+
   list(req, res) {
     const { user } = req;
     const { year } = req.query;
