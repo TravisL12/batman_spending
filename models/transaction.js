@@ -14,6 +14,18 @@ module.exports = (sequelize, DataTypes) => {
     {}
   );
 
+  Transaction.listYears = function(userId) {
+    // select distinct(date_format(date, '%Y')) year from transactions order by year;
+    return Transaction.findAll({
+      attributes: [
+        [sequelize.literal("DISTINCT(date_format(date, '%Y'))"), "year"]
+      ],
+      where: {
+        user_id: userId
+      }
+    });
+  };
+
   /**
    * Get specific month of year spending
    * Default to current month and year

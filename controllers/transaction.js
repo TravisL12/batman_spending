@@ -109,6 +109,16 @@ const TransactionController = {
     category = !category ? "None" : category;
     subcategory = !subcategory ? "None" : subcategory;
 
+    // Parse out date values from description
+    // these dates are more accurate of the actual transaction date
+    const re = new RegExp(/((^\d{1,2}|\s\d{1,2})\/\d{2}\s)/);
+    const newDate = description.match(re);
+
+    if (newDate) {
+      const year = new Date(date).getFullYear(); // used to get the year
+      date = [newDate[0].trim(), year].join("/");
+    }
+
     const createdAt = new Date();
     const updatedAt = new Date();
 

@@ -18,6 +18,11 @@ router.put(
   passport.authenticate("jwt", { session: false }),
   userController.update
 );
+router.get(
+  "/user/profile",
+  passport.authenticate("jwt", { session: false }),
+  userController.profile
+);
 
 // TRANSACTIONS
 router.get(

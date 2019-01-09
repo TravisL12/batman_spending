@@ -1,8 +1,19 @@
 const { User, Transaction } = require("../models");
 const authService = require("../services/auth");
 const { to, ReE, ReS } = require("../services/response");
+const _ = require("lodash");
 
 module.exports = {
+  async profile(req, res) {
+    const { user } = req;
+
+    const yearResponse = await Transaction.listYears(user.id);
+    const years = _.map(yearResponse, ({ dataValues: { year: year } }) => {
+      return year;
+    }).sort();
+    ReS(res, { user, years }, 200);
+  },
+
   async create(req, res) {
     const [err, user] = await to(authService.createUser(req.body));
 
