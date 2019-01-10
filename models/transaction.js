@@ -51,6 +51,72 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
+  Transaction.createNew = async (data, user) => {
+    let category = data["Master Category"] || data["category"];
+    let subcategory = data["Subcategory"] || data["subcategory"];
+    let date = data["Date"] || data["date"];
+    let payee = data["Payee"] || data["payee"];
+    let description = data["Description"] || data["description"];
+    let amount = data["Amount"] || data["amount"];
+
+    description = description.replace(/\s+/g, " "); // Trim extra spaces
+    amount = +amount.replace(/[$,]/g, "") * 100; // remove $ or ',' separators
+    category = !category ? "None" : category;
+    subcategory = !subcategory ? "None" : subcategory;
+
+    // Parse out date values from description
+    // these dates are more accurate of the actual transaction date
+    const re = new RegExp(/((^\d{1,2}|\s\d{1,2})\/\d{2}\s)/);
+    const newDate = description.match(re);
+
+    if (newDate) {
+      const year = new Date(date).getFullYear(); // used to get the year
+      date = [newDate[0].trim(), year].join("/");
+    }
+
+    const createdAt = new Date();
+    const updatedAt = new Date();
+
+    const [
+      categoryObj,
+      isCreated
+    ] = await sequelize.models.Category.findOrCreate({
+      where: {
+        name: category,
+        user_id: user.id
+      },
+      defaults: {
+        user_id: user.id
+      }
+    });
+
+    const [
+      subcategoryObj,
+      isSubCreated
+    ] = await sequelize.models.Category.findOrCreate({
+      where: {
+        name: subcategory,
+        user_id: user.id
+      },
+      defaults: {
+        parent_category_id: categoryObj.id,
+        user_id: user.id
+      }
+    });
+
+    return Transaction.create({
+      description,
+      payee,
+      amount,
+      date: new Date(date),
+      user_id: user.id,
+      category_id: categoryObj.id,
+      subcategory_id: subcategoryObj.id,
+      createdAt,
+      updatedAt
+    });
+  };
+
   Transaction.associate = ({ User, Category }) => {
     Transaction.belongsTo(User, {
       foreignKey: "user_id"
