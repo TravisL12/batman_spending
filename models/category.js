@@ -39,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
    * Default to current month and year
    */
   Category.getMonth = function(userId, month, year) {
-    const { startDate, endDate } = dateRange(year, month);
+    const { startDate, endDate } = dateRange(year, month + 1);
     const queryParams = {
       user_id: userId,
       category_id: {

@@ -7,7 +7,7 @@ const { to, ReE, ReS } = require("../services/response");
 const CategoryController = {
   async compare(req, res) {
     // Get category spending of past months
-    const numMonths = 3;
+    const numMonths = 5;
     const monthData = [];
     for (let i = 0; i < numMonths; i++) {
       const date = moment(new Date()).subtract(i, "M");
