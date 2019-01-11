@@ -8,7 +8,7 @@ const { to, ReE, ReS } = require("../services/response");
 const CategoryController = {
   // Get category spending of past months
   /**
-   * compare - retrieve range of categories separated by month
+   * range - retrieve range of categories separated by month
    * return {
    *    category_ids: idGroup,
    *    categories: monthData.reverse()
