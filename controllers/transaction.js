@@ -4,7 +4,6 @@ const parse = require("csv-parse");
 const transform = require("stream-transform");
 const _ = require("lodash");
 const { dateRange } = require("../services/utility");
-const moment = require("moment");
 const { to, ReE, ReS } = require("../services/response");
 
 const TransactionController = {
@@ -45,18 +44,16 @@ const TransactionController = {
     return ReS(res, { transactions }, 200);
   },
 
+  // not used but could be setup for pagination view to edit stuff
   async list(req, res) {
-    const { user } = req;
     const { year } = req.query;
-
-    const queryParams = {
-      user_id: user.id
-    };
+    const queryParams = { user_id: req.user.id };
 
     if (year) {
+      const { startDate, endDate } = dateRange(year, 12, 12);
       queryParams.date = {
-        $gte: moment(+year, "YYYY").toDate(),
-        $lt: moment(+year + 1, "YYYY").toDate()
+        $gte: startDate,
+        $lt: endDate
       };
     }
 

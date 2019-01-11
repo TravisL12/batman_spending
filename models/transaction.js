@@ -14,6 +14,15 @@ module.exports = (sequelize, DataTypes) => {
     {}
   );
 
+  // INCORPORATE THIS
+  // Transaction.groupByPayee
+  // select c.name, payee, count(*) count
+  //    from transactions
+  //    join categories c on c.id=transactions.category_id
+  //    where date >= '2018-1-01 00:00:00' and not payee=''
+  //    group by payee, category_id
+  //    order by count desc;
+
   Transaction.listYears = function(userId) {
     // select distinct(date_format(date, '%Y')) year from transactions order by year;
     return Transaction.findAll({
@@ -27,26 +36,28 @@ module.exports = (sequelize, DataTypes) => {
   };
 
   /**
-   * Get specific month of year spending
-   * Default to current month and year
-   * userId: integer - foreign key of transactions to get
-   * options: Object
-   *    startDate - starting date of transactions
-   *    endDate - end date of transactions
-   *    excludeCategoryIds - categories to ignore
+    Get specific month of year spending
+    Default to current month and year
+    userId: integer - foreign key of transactions to get
+    options: Object
+       startDate - starting date of transactions
+       endDate - end date of transactions
+       excludeCategoryIds - categories to ignore
    */
   Transaction.getMonth = function(userId, options) {
-    return Transaction.findAll({
-      where: {
-        user_id: userId,
-        category_id: {
-          [Op.not]: options.excludeCategoryIds
-        },
-        date: {
-          $gte: options.startDate,
-          $lt: options.endDate
-        }
+    const queryParams = {
+      user_id: userId,
+      category_id: {
+        [Op.not]: options.excludeCategoryIds
       },
+      date: {
+        $gte: options.startDate,
+        $lt: options.endDate
+      }
+    };
+
+    return Transaction.findAll({
+      where: queryParams,
       order: [["date", "ASC"]]
     });
   };
