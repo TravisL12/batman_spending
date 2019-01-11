@@ -2,30 +2,43 @@ const { Category, Transaction } = require("../models");
 const sequelize = require("sequelize");
 const moment = require("moment");
 const _ = require("lodash");
+const { dateRange } = require("../services/utility");
 const { to, ReE, ReS } = require("../services/response");
 
 const CategoryController = {
-  async compare(req, res) {
-    // Get category spending of past months
+  // Get category spending of past months
+  /**
+   * compare - retrieve range of categories separated by month
+   * return {
+   *    category_ids: idGroup,
+   *    categories: monthData.reverse()
+   * }
+   */
+  async range(req, res) {
+    const date = moment(new Date());
+    const options = { excludeCategoryIds: [254] }; // Outgoing transfers
     const numMonths = 5;
-    const monthData = [];
-    for (let i = 0; i < numMonths; i++) {
-      const date = moment(new Date()).subtract(i, "M");
-      const [err, categories] = await to(
-        Category.getMonth(req.user.id, date.month(), date.year())
-      );
-      if (err) return ReE(res, err, 422);
 
-      monthData.push({
-        month: date.month(),
-        year: date.year(),
-        categories
-      });
-    }
+    const [err, monthData] = await to(
+      Promise.all(
+        _.times(numMonths, async i => {
+          const year = date.year();
+          const month = date.month();
+          Object.assign(options, dateRange(year, month + 1));
+
+          date.subtract(1, "M"); // moment dates are mutable
+          const [err, categoryData] = await to(
+            Category.getDates(req.user.id, options)
+          );
+          if (err) return ReE(res, err, 422);
+          return { month, year, categoryData };
+        })
+      )
+    );
 
     // Concatenate all categories from response into one object
     // { 1: 'Taxes', 3: 'Food', 11: 'Gas' ... }
-    const keys = _.keyBy(_.concat(..._.map(monthData, "categories")), "id");
+    const keys = _.keyBy(_.concat(..._.map(monthData, "categoryData")), "id");
     const idGroup = _.reduce(
       keys,
       (group, { name }, id) => {
@@ -37,7 +50,10 @@ const CategoryController = {
 
     return ReS(
       res,
-      { categories: { idGroup, monthData: monthData.reverse() } },
+      {
+        category_ids: idGroup,
+        categories: monthData.reverse()
+      },
       200
     );
   },

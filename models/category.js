@@ -1,5 +1,4 @@
 "use strict";
-const { dateRange } = require("../services/utility");
 
 module.exports = (sequelize, DataTypes) => {
   const Op = sequelize.Op;
@@ -38,16 +37,15 @@ module.exports = (sequelize, DataTypes) => {
    * Get specific month of year spending
    * Default to current month and year
    */
-  Category.getMonth = function(userId, month, year) {
-    const { startDate, endDate } = dateRange(year, month + 1);
-    const queryParams = {
+  Category.getDates = function(userId, options) {
+    const transQueryParams = {
       user_id: userId,
       category_id: {
-        [Op.not]: [254] // "Outgoing Transfers"
+        [Op.not]: options.excludeCategoryIds
       },
       date: {
-        $gte: startDate,
-        $lt: endDate
+        $gte: options.startDate,
+        $lt: options.endDate
       }
     };
 
@@ -56,7 +54,7 @@ module.exports = (sequelize, DataTypes) => {
         {
           model: sequelize.models.Transaction,
           as: "Transactions",
-          where: queryParams
+          where: transQueryParams
         }
       ],
       group: ["Category.id", "Transactions.id"],

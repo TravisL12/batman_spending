@@ -66,7 +66,7 @@ router.get(
 router.get(
   "/categories/compare",
   passport.authenticate("jwt", { session: false }),
-  categoryController.compare
+  categoryController.range
 );
 router.get(
   "/categories/:id",

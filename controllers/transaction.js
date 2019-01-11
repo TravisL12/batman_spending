@@ -15,7 +15,7 @@ const TransactionController = {
     options.excludeCategoryIds = [254]; // Outgoing transfers
 
     const [errTransactions, transactionData] = await to(
-      TransactionModel.getMonth(user.id, options)
+      TransactionModel.getDates(user.id, options)
     );
     if (errTransactions) return ReE(res, errTransactions, 422);
 
@@ -24,14 +24,14 @@ const TransactionController = {
       return new Date(trans.date).getFullYear();
     });
 
+    // Filter by month
     _.forEach(transactions, (tYear, year) => {
-      // Filter by month
       transactions[year] = _.groupBy(transactions[year], trans => {
         return new Date(trans.date).getMonth() + 1;
       });
 
+      // Filter by day (date)
       _.forEach(transactions[year], (tMonth, month) => {
-        // Filter by day (date)
         transactions[year][month] = _.groupBy(
           transactions[year][month],
           trans => {

@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
   };
 
   /**
-    Get specific month of year spending
+    Get spending for range of dates
     Default to current month and year
     userId: integer - foreign key of transactions to get
     options: Object
@@ -44,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
        endDate - end date of transactions
        excludeCategoryIds - categories to ignore
    */
-  Transaction.getMonth = function(userId, options) {
+  Transaction.getDates = function(userId, options) {
     const queryParams = {
       user_id: userId,
       category_id: {
