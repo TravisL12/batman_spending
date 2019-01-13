@@ -1,7 +1,11 @@
-const { Transaction: TransactionModel } = require("../models");
+const {
+  Transaction: TransactionModel,
+  Category: CategoryModel
+} = require("../models");
 const fs = require("fs");
 const parse = require("csv-parse");
 const transform = require("stream-transform");
+const moment = require("moment");
 const _ = require("lodash");
 const { dateRange } = require("../services/utility");
 const { to, ReE, ReS } = require("../services/response");
@@ -11,26 +15,54 @@ const TransactionController = {
     const { user } = req;
     const { year, month } = req.params;
 
-    const options = !month ? dateRange(year, 12, 12) : dateRange(year, month);
+    const numMonths = 12;
+    const options = !month
+      ? dateRange(year, 12, numMonths)
+      : dateRange(year, month);
     options.excludeCategoryIds = [254]; // Outgoing transfers
 
+    // Get category data for each month
+    const [errCategories, categoryData] = await to(
+      Promise.all(
+        _.times(numMonths, async month => {
+          Object.assign(options, dateRange(year, month));
+          const [err, data] = await to(
+            CategoryModel.countSumJoinSubcategories(req.user.id, options)
+          );
+          if (err) return ReE(res, err, 422);
+
+          return data;
+        })
+      )
+    );
+    if (errCategories) return ReE(res, errCategories, 422);
+
+    // Organize category data into object
+    const categoryReduceResult = {};
+    categoryReduceResult[year] = {};
+    const categories = categoryData.reduce((result, monthData, idx) => {
+      result[year][idx + 1] = monthData;
+      return result;
+    }, categoryReduceResult);
+
+    // Get Transaction data
     const [errTransactions, transactionData] = await to(
       TransactionModel.getDates(user.id, options)
     );
     if (errTransactions) return ReE(res, errTransactions, 422);
 
-    // Filter by year
+    // Filter Transaction data by year
     const transactions = _.groupBy(transactionData, trans => {
       return new Date(trans.date).getFullYear();
     });
 
-    // Filter by month
+    // Filter Transaction data by month
     _.forEach(transactions, (tYear, year) => {
       transactions[year] = _.groupBy(transactions[year], trans => {
         return new Date(trans.date).getMonth() + 1;
       });
 
-      // Filter by day (date)
+      // Filter Transaction data by day (date)
       _.forEach(transactions[year], (tMonth, month) => {
         transactions[year][month] = _.groupBy(
           transactions[year][month],
@@ -41,7 +73,7 @@ const TransactionController = {
       });
     });
 
-    return ReS(res, { transactions }, 200);
+    return ReS(res, { transactions, categories }, 200);
   },
 
   // not used but could be setup for pagination view to edit stuff

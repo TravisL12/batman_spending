@@ -60,30 +60,7 @@ const CategoryController = {
 
   async list(req, res) {
     const [error, categories] = await to(
-      Category.findAll({
-        attributes: {
-          include: [
-            [
-              sequelize.fn("COUNT", sequelize.col("transactions.id")),
-              "transactionCount"
-            ]
-          ]
-        },
-        include: [
-          {
-            model: Category,
-            as: "Subcategory"
-          },
-          {
-            model: Transaction,
-            attributes: [],
-            where: {
-              user_id: req.user.id
-            }
-          }
-        ],
-        group: ["Category.id", "Subcategory.id"]
-      })
+      Category.countSumJoinSubcategories(req.user.id)
     );
 
     if (error) return ReE(res, error);

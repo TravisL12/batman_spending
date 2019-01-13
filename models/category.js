@@ -50,6 +50,21 @@ module.exports = (sequelize, DataTypes) => {
     };
 
     return Category.findAll({
+      attributes: {
+        include: [
+          [
+            sequelize.fn("COUNT", sequelize.col("transactions.id")),
+            "transactionCount"
+          ],
+          [
+            sequelize.fn("SUM", sequelize.col("transactions.amount")),
+            "transactionSum"
+          ]
+        ]
+      },
+      where: {
+        user_id: userId
+      },
       include: [
         {
           model: sequelize.models.Transaction,
@@ -59,6 +74,50 @@ module.exports = (sequelize, DataTypes) => {
       ],
       group: ["Category.id", "Transactions.id"],
       order: [["name", "ASC"]]
+    });
+  };
+
+  Category.countSumJoinSubcategories = function(userId, options = {}) {
+    const transactionQueryParams = {
+      user_id: userId
+    };
+
+    if (options.dates) {
+      transactionQueryParams.startDate = options.startDate;
+      transactionQueryParams.endDate = options.endDate;
+    }
+    return Category.findAll({
+      attributes: {
+        include: [
+          [
+            sequelize.fn("COUNT", sequelize.col("transactions.id")),
+            "transactionCount"
+          ],
+          [
+            sequelize.fn("SUM", sequelize.col("transactions.amount")),
+            "transactionSum"
+          ]
+        ]
+      },
+      where: {
+        user_id: userId
+      },
+      include: [
+        {
+          model: sequelize.models.Category,
+          as: "Subcategory",
+          where: {
+            user_id: userId
+          }
+        },
+        {
+          model: sequelize.models.Transaction,
+          as: "Transactions",
+          attributes: [],
+          where: transactionQueryParams
+        }
+      ],
+      group: ["Category.id", "Subcategory.id"]
     });
   };
 
