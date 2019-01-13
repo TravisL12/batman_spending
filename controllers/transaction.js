@@ -46,21 +46,14 @@ const TransactionController = {
 
   // not used but could be setup for pagination view to edit stuff
   async list(req, res) {
-    const { year } = req.query;
-    const queryParams = { user_id: req.user.id };
-
-    if (year) {
-      const { startDate, endDate } = dateRange(year, 12, 12);
-      queryParams.date = {
-        $gte: startDate,
-        $lt: endDate
-      };
-    }
+    const limit = 500;
+    const page = req.params.page || 0;
 
     const [error, transactions] = await to(
       TransactionModel.findAll({
-        where: queryParams,
-        limit: 100,
+        where: { user_id: req.user.id },
+        limit,
+        offset: page * limit,
         order: [["date", "DESC"]]
       })
     );

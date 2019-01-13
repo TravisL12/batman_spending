@@ -36,7 +36,7 @@ router.get(
   transactionController.range
 );
 router.get(
-  "/transactions",
+  "/transactions/list/:page?",
   passport.authenticate("jwt", { session: false }),
   transactionController.list
 );
