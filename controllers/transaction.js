@@ -21,30 +21,6 @@ const TransactionController = {
       : dateRange(year, month);
     options.excludeCategoryIds = [254]; // Outgoing transfers
 
-    // Get category data for each month
-    const [errCategories, categoryData] = await to(
-      Promise.all(
-        _.times(numMonths, async month => {
-          Object.assign(options, dateRange(year, month));
-          const [err, data] = await to(
-            CategoryModel.countSumJoinSubcategories(req.user.id, options)
-          );
-          if (err) return ReE(res, err, 422);
-
-          return data;
-        })
-      )
-    );
-    if (errCategories) return ReE(res, errCategories, 422);
-
-    // Organize category data into object
-    const categoryReduceResult = {};
-    categoryReduceResult[year] = {};
-    const categories = categoryData.reduce((result, monthData, idx) => {
-      result[year][idx + 1] = monthData;
-      return result;
-    }, categoryReduceResult);
-
     // Get Transaction data
     const [errTransactions, transactionData] = await to(
       TransactionModel.getDates(user.id, options)
@@ -72,6 +48,30 @@ const TransactionController = {
         );
       });
     });
+
+    // Get category data for each month
+    const [errCategories, categoryData] = await to(
+      Promise.all(
+        _.times(numMonths, async month => {
+          Object.assign(options, dateRange(year, month));
+          const [err, data] = await to(
+            CategoryModel.countSumJoinSubcategories(req.user.id, options)
+          );
+          if (err) return ReE(res, err, 422);
+
+          return data;
+        })
+      )
+    );
+    if (errCategories) return ReE(res, errCategories, 422);
+
+    // Organize category data into object
+    const categoryReduceResult = {};
+    categoryReduceResult[year] = {};
+    const categories = categoryData.reduce((result, monthData, idx) => {
+      result[year][idx + 1] = monthData;
+      return result;
+    }, categoryReduceResult);
 
     return ReS(res, { transactions, categories }, 200);
   },
