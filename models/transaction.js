@@ -58,7 +58,16 @@ module.exports = (sequelize, DataTypes) => {
 
     return Transaction.findAll({
       where: queryParams,
-      order: [["date", "ASC"]]
+      order: [["date", "ASC"]],
+      include: [
+        {
+          model: sequelize.models.Category,
+          as: "Category",
+          where: {
+            user_id: userId
+          }
+        }
+      ]
     });
   };
 
@@ -133,10 +142,12 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "user_id"
     });
     Transaction.belongsTo(Category, {
-      foreignKey: "category_id"
+      foreignKey: "category_id",
+      as: "Category"
     });
     Transaction.belongsTo(Category, {
-      foreignKey: "subcategory_id"
+      foreignKey: "subcategory_id",
+      as: "Subcategory"
     });
   };
 

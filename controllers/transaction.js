@@ -5,7 +5,6 @@ const {
 const fs = require("fs");
 const parse = require("csv-parse");
 const transform = require("stream-transform");
-const moment = require("moment");
 const _ = require("lodash");
 const { dateRange } = require("../services/utility");
 const { to, ReE, ReS } = require("../services/response");
@@ -27,10 +26,17 @@ const TransactionController = {
     );
     if (errTransactions) return ReE(res, errTransactions, 422);
 
+    const allCategories = _.keyBy(
+      _.uniqBy(_.map(transactionData, "Category"), "id"),
+      "id"
+    );
+
     // Filter Transaction data by year
     const transactions = _.groupBy(transactionData, trans => {
       return new Date(trans.date).getFullYear();
     });
+
+    const categories = {};
 
     // Filter Transaction data by month
     _.forEach(transactions, (tYear, year) => {
@@ -38,8 +44,24 @@ const TransactionController = {
         return new Date(trans.date).getMonth() + 1;
       });
 
+      categories[year] = {}; // initialize category year
+
       // Filter Transaction data by day (date)
       _.forEach(transactions[year], (tMonth, month) => {
+        // Group all transactions into specific year-month by category_id
+        categories[year][month] = tMonth.reduce((result, t) => {
+          if (result[t.category_id]) {
+            result[t.category_id].sum += t.amount;
+          } else {
+            result[t.category_id] = {
+              ...allCategories[t.category_id].toJSON(),
+              sum: t.amount
+            };
+          }
+
+          return result;
+        }, {});
+
         transactions[year][month] = _.groupBy(
           transactions[year][month],
           trans => {
@@ -48,30 +70,6 @@ const TransactionController = {
         );
       });
     });
-
-    // Get category data for each month
-    const [errCategories, categoryData] = await to(
-      Promise.all(
-        _.times(numMonths, async month => {
-          Object.assign(options, dateRange(year, month));
-          const [err, data] = await to(
-            CategoryModel.countSumJoinSubcategories(req.user.id, options)
-          );
-          if (err) return ReE(res, err, 422);
-
-          return data;
-        })
-      )
-    );
-    if (errCategories) return ReE(res, errCategories, 422);
-
-    // Organize category data into object
-    const categoryReduceResult = {};
-    categoryReduceResult[year] = {};
-    const categories = categoryData.reduce((result, monthData, idx) => {
-      result[year][idx + 1] = monthData;
-      return result;
-    }, categoryReduceResult);
 
     return ReS(res, { transactions, categories }, 200);
   },
