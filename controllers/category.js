@@ -16,7 +16,7 @@ const CategoryController = {
    */
   async range(req, res) {
     const date = moment(new Date());
-    const options = { excludeCategoryIds: [254] }; // Outgoing transfers
+    const options = { excludeCategoryIds: [2] }; // Outgoing transfers
     const numMonths = 5;
 
     const [err, monthData] = await to(

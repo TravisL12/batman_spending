@@ -79,13 +79,11 @@ module.exports = (sequelize, DataTypes) => {
 
   Category.countSumJoinSubcategories = function(userId, options = {}) {
     const transactionQueryParams = {
-      user_id: userId
+      user_id: userId,
+      category_id: { [Op.not]: options.excludeCategoryIds },
+      date: { $gte: options.startDate, $lt: options.endDate }
     };
 
-    if (options.dates) {
-      transactionQueryParams.startDate = options.startDate;
-      transactionQueryParams.endDate = options.endDate;
-    }
     return Category.findAll({
       attributes: {
         include: [
@@ -100,7 +98,8 @@ module.exports = (sequelize, DataTypes) => {
         ]
       },
       where: {
-        user_id: userId
+        user_id: userId,
+        id: { [Op.not]: options.excludeCategoryIds }
       },
       include: [
         {
