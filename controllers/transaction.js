@@ -84,7 +84,25 @@ const TransactionController = {
         where: { user_id: req.user.id },
         limit,
         offset: page * limit,
-        order: [["date", "DESC"]]
+        order: [["date", "DESC"]],
+        include: [
+          {
+            model: CategoryModel,
+            attributes: ["id", "name"],
+            as: "Category",
+            where: {
+              user_id: req.user.id
+            }
+          },
+          {
+            model: CategoryModel,
+            attributes: ["id", "name"],
+            as: "Subcategory",
+            where: {
+              user_id: req.user.id
+            }
+          }
+        ]
       })
     );
 
