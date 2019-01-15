@@ -8,6 +8,7 @@ const transform = require("stream-transform");
 const _ = require("lodash");
 const { dateRange } = require("../services/utility");
 const { to, ReE, ReS } = require("../services/response");
+const { Op } = require("sequelize");
 
 const TransactionController = {
   async range(req, res) {
@@ -79,9 +80,16 @@ const TransactionController = {
     const limit = 500;
     const page = req.params.page || 0;
 
+    const query = { user_id: req.user.id };
+    if (req.query.search) {
+      query.description = {
+        [Op.like]: `%${req.query.search}%`
+      };
+    }
+
     const [error, transactions] = await to(
       TransactionModel.findAll({
-        where: { user_id: req.user.id },
+        where: query,
         limit,
         offset: page * limit,
         order: [["date", "DESC"]],
