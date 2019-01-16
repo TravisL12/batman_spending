@@ -17,7 +17,7 @@ const CategoryController = {
   async range(req, res) {
     const date = moment(new Date());
     const options = { excludeCategoryIds: [2] }; // Outgoing transfers
-    const numMonths = 5;
+    const numMonths = 12;
 
     const [err, monthData] = await to(
       Promise.all(
@@ -31,18 +31,23 @@ const CategoryController = {
             Category.getDates(req.user.id, options)
           );
           if (err) return ReE(res, err, 422);
-          return { month, year, categoryData };
+
+          const data = categoryData.reduce((result, cat) => {
+            result[cat.id] = cat;
+            return result;
+          }, {});
+
+          return { month, year, categoryData: data };
         })
       )
     );
 
     // Concatenate all categories from response into one object
     // { 1: 'Taxes', 3: 'Food', 11: 'Gas' ... }
-    const keys = _.keyBy(_.concat(..._.map(monthData, "categoryData")), "id");
     const idGroup = _.reduce(
-      keys,
-      (group, { name }, id) => {
-        group[id] = name;
+      monthData,
+      (group, data) => {
+        Object.assign(group, data);
         return group;
       },
       {}
@@ -51,7 +56,7 @@ const CategoryController = {
     return ReS(
       res,
       {
-        category_ids: idGroup,
+        category_ids: idGroup.categoryData,
         categories: monthData.reverse()
       },
       200

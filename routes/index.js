@@ -26,11 +26,6 @@ router.get(
 
 // TRANSACTIONS
 router.get(
-  "/transactions/monthly/:year/:month",
-  passport.authenticate("jwt", { session: false }),
-  transactionController.range
-);
-router.get(
   "/transactions/yearly/:year",
   passport.authenticate("jwt", { session: false }),
   transactionController.range
