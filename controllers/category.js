@@ -21,7 +21,7 @@ const CategoryController = {
 
     const [err, monthData] = await to(
       Promise.all(
-        _.times(numMonths, async i => {
+        _.times(numMonths, async () => {
           const year = date.year();
           const month = date.month();
           Object.assign(options, dateRange(year, month + 1));
@@ -42,12 +42,19 @@ const CategoryController = {
       )
     );
 
+    // send an object instead of array?
+    const reducedMonthData = monthData.reduce((result, i) => {
+      result[i.year] = result[i.year] ? result[i.year] : {};
+      result[i.year][i.month] = i.categoryData;
+      return result;
+    }, {});
+
     // Concatenate all categories from response into one object
     // { 1: 'Taxes', 3: 'Food', 11: 'Gas' ... }
     const idGroup = _.reduce(
       monthData,
       (group, data) => {
-        Object.assign(group, data);
+        Object.assign(group, data.categoryData);
         return group;
       },
       {}
@@ -56,8 +63,9 @@ const CategoryController = {
     return ReS(
       res,
       {
-        category_ids: idGroup.categoryData,
-        categories: monthData.reverse()
+        category_ids: idGroup,
+        categories: monthData.reverse(),
+        reducedMonthData
       },
       200
     );
