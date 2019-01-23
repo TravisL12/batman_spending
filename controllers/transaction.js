@@ -43,6 +43,9 @@ const TransactionController = {
       query.description = {
         [Op.like]: `%${req.query.search}%`
       };
+      query.payee = {
+        [Op.like]: `%${req.query.search}%`
+      };
     }
 
     const [error, transactions] = await to(
