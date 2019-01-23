@@ -37,76 +37,49 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
+  Transaction.groupYear = function(transactionData) {
+    return _.groupBy(transactionData, trans => {
+      return new Date(trans.date).getFullYear();
+    });
+  };
+
+  Transaction.groupMonth = function(transactionData) {
+    return _.groupBy(transactionData, trans => {
+      return new Date(trans.date).getMonth() + 1;
+    });
+  };
+
+  Transaction.groupDay = function(transactionData) {
+    return _.groupBy(transactionData, trans => {
+      return new Date(trans.date).getDate();
+    });
+  };
+
   /**
    * Takes transactions and groups them in year-month objects
-   * {
-   *    2018: { // year
-   *        2: { // month (Feb)
-   *             5: [ // day
-   *                 Category: {},
-   *                 ...transaction attributes
-   *                ]
-   *           }
-   *         }
-   * }
-   *
-   * Also groups categories and groups them in year-month-category_id
-   * {
-   *    2018: { // year
-   *        2: { // month (Feb)
-   *             35: { // category_id
-   *                 ...category attributes
-   *                }
-   *           }
-   *         }
+   * 2018: { // year
+   *     2: { // month (Feb)
+   *        5: [ // day
+   *            ...transaction attributes
+   *           ]
+   *     }
    * }
    */
   Transaction.groupByYearMonth = function(transactionData) {
-    const categories = {};
-    const allCategories = _.keyBy(
-      _.uniqBy(_.map(transactionData, "Category"), "id"),
-      "id"
-    );
+    const transactions = Transaction.groupYear(transactionData);
 
-    // Filter Transaction data by year
-    const transactions = _.groupBy(transactionData, trans => {
-      return new Date(trans.date).getFullYear();
-    });
-
-    // Filter Transaction data by month
     _.forEach(transactions, (tYear, year) => {
-      transactions[year] = _.groupBy(transactions[year], trans => {
-        return new Date(trans.date).getMonth() + 1;
-      });
-
-      categories[year] = {}; // initialize category year
+      transactions[year] = Transaction.groupMonth(transactions[year]);
 
       // Filter Transaction data by day (date)
       _.forEach(transactions[year], (tMonth, month) => {
-        // Group all transactions into specific year-month by category_id
-        categories[year][month] = tMonth.reduce((result, t) => {
-          if (result[t.category_id]) {
-            result[t.category_id].sum += t.amount;
-          } else {
-            result[t.category_id] = {
-              ...allCategories[t.category_id].get({ plain: true }),
-              sum: t.amount
-            };
-          }
-
-          return result;
-        }, {});
-
-        transactions[year][month] = _.groupBy(
-          transactions[year][month],
-          trans => {
-            return new Date(trans.date).getDate();
-          }
+        transactions[year][month] = Transaction.groupDay(
+          transactions[year][month]
         );
       });
     });
 
-    return { transactions, categories };
+    return transactions;
   };
 
   /**

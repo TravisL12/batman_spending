@@ -1,4 +1,5 @@
 "use strict";
+const _ = require("lodash");
 
 module.exports = (sequelize, DataTypes) => {
   const Op = sequelize.Op;
@@ -75,6 +76,57 @@ module.exports = (sequelize, DataTypes) => {
       group: ["Category.id", "Transactions.id"],
       order: [["name", "ASC"]]
     });
+  };
+
+  /**
+   * Groups categories and groups them in year-month-category_id
+   * {
+   *    2018: { // year
+   *        2: { // month (Feb)
+   *             35: { // category_id
+   *                 ...category attributes
+   *                }
+   *           }
+   *         }
+   * }
+   */
+  Category.groupByYearMonth = function(transactionData) {
+    const transactions = sequelize.models.Transaction.groupYear(
+      transactionData
+    );
+    const categories = Object.keys(transactions).reduce((result, year) => {
+      result[year] = {};
+      return result;
+    }, {});
+    const allCategories = _.keyBy(
+      _.uniqBy(_.map(transactionData, "Category"), "id"),
+      "id"
+    );
+
+    _.forEach(transactions, (tYear, year) => {
+      transactions[year] = sequelize.models.Transaction.groupMonth(
+        transactions[year]
+      );
+
+      // Filter Transaction data by day (date)
+      _.forEach(transactions[year], (tMonth, month) => {
+        // Group all transactions into specific year-month by category_id
+        categories[year][month] = tMonth.reduce((result, t) => {
+          if (result[t.category_id]) {
+            result[t.category_id].sum += t.amount;
+          } else {
+            result[t.category_id] = {
+              ...allCategories[t.category_id].get({ plain: true }),
+              sum: t.amount
+            };
+          }
+
+          return result;
+        }, {});
+      });
+    });
+
+    return categories;
   };
 
   Category.countSumJoinSubcategories = function(userId, options = {}) {

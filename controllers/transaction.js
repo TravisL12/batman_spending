@@ -27,11 +27,12 @@ const TransactionController = {
     );
     if (errTransactions) return ReE(res, errTransactions, 422);
 
-    const { transactions, categories } = TransactionModel.groupByYearMonth(
-      transactionData
-    );
+    const data = {
+      transactions: TransactionModel.groupByYearMonth(transactionData),
+      categories: CategoryModel.groupByYearMonth(transactionData)
+    };
 
-    return ReS(res, { transactions, categories }, 200);
+    return ReS(res, data, 200);
   },
 
   async list(req, res) {
