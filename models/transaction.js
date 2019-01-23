@@ -2,6 +2,7 @@ const _ = require("lodash");
 
 module.exports = (sequelize, DataTypes) => {
   const Op = sequelize.Op;
+  const CategoryModel = sequelize.models.Category;
   const Transaction = sequelize.define(
     "Transaction",
     {
@@ -60,26 +61,38 @@ module.exports = (sequelize, DataTypes) => {
    * 2018: { // year
    *     2: { // month (Feb)
    *        5: [ // day
-   *            ...transaction attributes
+   *            ...transactions
    *           ]
    *     }
    * }
    */
   Transaction.groupByYearMonth = function(transactionData) {
     const transactions = Transaction.groupYear(transactionData);
+    const categories = Object.keys(transactions).reduce((result, year) => {
+      result[year] = {};
+      return result;
+    }, {});
+    const allCategories = _.keyBy(
+      _.uniqBy(_.map(transactionData, "Category"), "id"),
+      "id"
+    );
 
     _.forEach(transactions, (tYear, year) => {
       transactions[year] = Transaction.groupMonth(transactions[year]);
 
       // Filter Transaction data by day (date)
       _.forEach(transactions[year], (tMonth, month) => {
+        categories[year][month] = CategoryModel.groupMonth(
+          tMonth,
+          allCategories
+        );
         transactions[year][month] = Transaction.groupDay(
           transactions[year][month]
         );
       });
     });
 
-    return transactions;
+    return { transactions, categories };
   };
 
   /**
@@ -108,7 +121,7 @@ module.exports = (sequelize, DataTypes) => {
       order: [["date", "ASC"]],
       include: [
         {
-          model: sequelize.models.Category,
+          model: CategoryModel,
           as: "Category",
           where: {
             user_id: userId
@@ -144,10 +157,7 @@ module.exports = (sequelize, DataTypes) => {
     const createdAt = new Date();
     const updatedAt = new Date();
 
-    const [
-      categoryObj,
-      isCreated
-    ] = await sequelize.models.Category.findOrCreate({
+    const [categoryObj, isCreated] = await CategoryModel.findOrCreate({
       where: {
         name: category,
         user_id: user.id
@@ -157,10 +167,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     });
 
-    const [
-      subcategoryObj,
-      isSubCreated
-    ] = await sequelize.models.Category.findOrCreate({
+    const [subcategoryObj, isSubCreated] = await CategoryModel.findOrCreate({
       where: {
         name: subcategory,
         user_id: user.id

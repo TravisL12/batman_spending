@@ -90,43 +90,20 @@ module.exports = (sequelize, DataTypes) => {
    *         }
    * }
    */
-  Category.groupByYearMonth = function(transactionData) {
-    const transactions = sequelize.models.Transaction.groupYear(
-      transactionData
-    );
-    const categories = Object.keys(transactions).reduce((result, year) => {
-      result[year] = {};
+  Category.groupMonth = function(transactionMonthData, allCategories) {
+    // Group all transactions into specific year-month by category_id
+    return transactionMonthData.reduce((result, t) => {
+      if (result[t.category_id]) {
+        result[t.category_id].sum += t.amount;
+      } else {
+        result[t.category_id] = {
+          ...allCategories[t.category_id].get({ plain: true }),
+          sum: t.amount
+        };
+      }
+
       return result;
     }, {});
-    const allCategories = _.keyBy(
-      _.uniqBy(_.map(transactionData, "Category"), "id"),
-      "id"
-    );
-
-    _.forEach(transactions, (tYear, year) => {
-      transactions[year] = sequelize.models.Transaction.groupMonth(
-        transactions[year]
-      );
-
-      // Filter Transaction data by day (date)
-      _.forEach(transactions[year], (tMonth, month) => {
-        // Group all transactions into specific year-month by category_id
-        categories[year][month] = tMonth.reduce((result, t) => {
-          if (result[t.category_id]) {
-            result[t.category_id].sum += t.amount;
-          } else {
-            result[t.category_id] = {
-              ...allCategories[t.category_id].get({ plain: true }),
-              sum: t.amount
-            };
-          }
-
-          return result;
-        }, {});
-      });
-    });
-
-    return categories;
   };
 
   Category.countSumJoinSubcategories = function(userId, options = {}) {
@@ -155,7 +132,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       include: [
         {
-          model: sequelize.models.Category,
+          model: Category,
           as: "Subcategory",
           where: {
             user_id: userId
