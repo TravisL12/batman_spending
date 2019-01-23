@@ -13,9 +13,9 @@ const { Op } = require("sequelize");
 const TransactionController = {
   async range(req, res) {
     const { user } = req;
-    const { year, month } = req.params;
+    const { year, month, monthsBack } = req.params;
 
-    const numMonths = 12;
+    const numMonths = monthsBack || 12;
     const options = !month
       ? dateRange(year, 12, numMonths)
       : dateRange(year, month);
@@ -27,55 +27,13 @@ const TransactionController = {
     );
     if (errTransactions) return ReE(res, errTransactions, 422);
 
-    const allCategories = _.keyBy(
-      _.uniqBy(_.map(transactionData, "Category"), "id"),
-      "id"
+    const { transactions, categories } = TransactionModel.groupByYearMonth(
+      transactionData
     );
-
-    // Filter Transaction data by year
-    const transactions = _.groupBy(transactionData, trans => {
-      return new Date(trans.date).getFullYear();
-    });
-
-    const categories = {};
-
-    // Filter Transaction data by month
-    _.forEach(transactions, (tYear, year) => {
-      transactions[year] = _.groupBy(transactions[year], trans => {
-        return new Date(trans.date).getMonth() + 1;
-      });
-
-      categories[year] = {}; // initialize category year
-
-      // Filter Transaction data by day (date)
-      _.forEach(transactions[year], (tMonth, month) => {
-        // Group all transactions into specific year-month by category_id
-        categories[year][month] = tMonth.reduce((result, t) => {
-          if (result[t.category_id]) {
-            result[t.category_id].sum += t.amount;
-          } else {
-            result[t.category_id] = {
-              ...allCategories[t.category_id].toJSON(),
-              sum: t.amount
-            };
-          }
-
-          return result;
-        }, {});
-
-        transactions[year][month] = _.groupBy(
-          transactions[year][month],
-          trans => {
-            return new Date(trans.date).getDate();
-          }
-        );
-      });
-    });
 
     return ReS(res, { transactions, categories }, 200);
   },
 
-  // not used but could be setup for pagination view to edit stuff
   async list(req, res) {
     const limit = 500;
     const page = req.params.page || 0;
@@ -147,6 +105,7 @@ const TransactionController = {
     return error ? ReE(res, error) : ReS(res, { transaction }, 201);
   },
 
+  // not used
   async getById(req, res) {
     const { user } = req;
 

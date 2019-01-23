@@ -42,7 +42,7 @@ const CategoryController = {
       )
     );
 
-    // send an object instead of array?
+    // send an object instead of array? Nope, you don't
     const reducedMonthData = monthData.reduce((result, i) => {
       result[i.year] = result[i.year] ? result[i.year] : {};
       result[i.year][i.month] = i.categoryData;
