@@ -26,6 +26,21 @@ module.exports = (sequelize, DataTypes) => {
   //    group by payee, category_id
   //    order by count desc;
 
+  Transaction.groupSumPayees = function(transactionData) {
+    const payees = _.groupBy(transactionData, t => {
+      return t.get("payee") || "none";
+    });
+
+    const payeeSum = [];
+    _.forEach(payees, (trans, payee) => {
+      const sum = _.sumBy(trans, "amount");
+      payeeSum.push({ name: payee, sum });
+    });
+
+    const sorted = _.sortBy(payeeSum, [{ sum: "desc" }]);
+    return sorted;
+  };
+
   Transaction.listYears = function(userId) {
     // select distinct(date_format(date, '%Y')) year from transactions order by year;
     return Transaction.findAll({

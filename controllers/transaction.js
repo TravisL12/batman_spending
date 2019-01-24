@@ -81,7 +81,9 @@ const TransactionController = {
       })
     );
 
-    return error ? ReE(res, error) : ReS(res, { transactions }, 200);
+    const payees = TransactionModel.groupSumPayees(transactions);
+
+    return error ? ReE(res, error) : ReS(res, { transactions, payees }, 200);
   },
 
   import(req, res) {
