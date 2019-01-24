@@ -40,12 +40,18 @@ const TransactionController = {
 
     const query = { user_id: req.user.id };
     if (req.query.search) {
-      query.description = {
-        [Op.like]: `%${req.query.search}%`
-      };
-      query.payee = {
-        [Op.like]: `%${req.query.search}%`
-      };
+      query[Op.or] = [
+        {
+          description: {
+            [Op.like]: `%${req.query.search}%`
+          }
+        },
+        {
+          payee: {
+            [Op.like]: `%${req.query.search}%`
+          }
+        }
+      ];
     }
 
     const [error, transactions] = await to(
