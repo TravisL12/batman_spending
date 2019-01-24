@@ -132,11 +132,19 @@ module.exports = (sequelize, DataTypes) => {
   };
 
   Transaction.createNew = async (data, user) => {
-    let category = data["Master Category"] || data["category"];
+    if (data["Category"] === "Deposits") {
+      return false;
+    }
+
+    let category =
+      data["Master Category"] || data["category"] || data["Category"];
     let subcategory = data["Subcategory"] || data["subcategory"];
     let date = data["Date"] || data["date"];
-    let payee = data["Payee"] || data["payee"];
-    let description = data["Description"] || data["description"];
+    let payee = data["Payee"] || data["payee"] || data["Simple Description"];
+    let description =
+      data["Description"] ||
+      data["description"] ||
+      data["Original Description"];
     let amount = data["Amount"] || data["amount"];
 
     description = description.replace(/\s+/g, " "); // Trim extra spaces
@@ -181,7 +189,7 @@ module.exports = (sequelize, DataTypes) => {
     return Transaction.create({
       description,
       payee,
-      amount,
+      amount: Math.abs(amount),
       date: new Date(date),
       user_id: user.id,
       category_id: categoryObj.id,

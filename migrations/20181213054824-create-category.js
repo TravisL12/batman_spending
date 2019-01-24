@@ -1,7 +1,7 @@
 "use strict";
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("categories", {
+    const CategoryTable = queryInterface.createTable("categories", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -10,8 +10,7 @@ module.exports = {
       },
       name: {
         type: Sequelize.STRING,
-        allowNull: false,
-        unique: true
+        allowNull: false
       },
       parent_category_id: {
         type: Sequelize.INTEGER
@@ -28,6 +27,13 @@ module.exports = {
         type: Sequelize.DATE
       }
     });
+
+    queryInterface.addConstraint("categories", ["name", "user_id"], {
+      type: "unique",
+      name: "unique_category_name_user"
+    });
+
+    return CategoryTable;
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable("categories");

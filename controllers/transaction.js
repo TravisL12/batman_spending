@@ -85,8 +85,8 @@ const TransactionController = {
         .then(() => {
           next();
         })
-        .catch(() => {
-          console.log("error");
+        .catch(err => {
+          console.log(err.sqlMessage, "error");
           next();
         });
     }).on("finish", () => {
