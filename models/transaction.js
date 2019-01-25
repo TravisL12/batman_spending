@@ -101,9 +101,10 @@ module.exports = (sequelize, DataTypes) => {
           tMonth,
           allCategories
         );
-        transactions[year][month] = Transaction.groupDay(
-          transactions[year][month]
-        );
+        transactions[year][month] = {
+          days: Transaction.groupDay(transactions[year][month]),
+          payees: Transaction.groupSumPayees(tMonth)
+        };
       });
     });
 
