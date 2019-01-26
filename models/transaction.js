@@ -1,4 +1,5 @@
 const _ = require("lodash");
+// const substrings = require("common-substrings");
 
 module.exports = (sequelize, DataTypes) => {
   const Op = sequelize.Op;
@@ -30,6 +31,13 @@ module.exports = (sequelize, DataTypes) => {
     const payees = _.groupBy(transactionData, t => {
       return t.get("payee") || "none";
     });
+
+    // substring stuff that I'm not sure about
+    // const desc = transactionData.map(t => {
+    //   return t.get("description");
+    // });
+    // const tree = substrings.weigh(desc);
+    // console.log(tree);
 
     const payeeSum = [];
     _.forEach(payees, (trans, payee) => {
