@@ -1,5 +1,5 @@
 const _ = require("lodash");
-// const substrings = require("common-substrings");
+const substrings = require("common-substrings");
 
 module.exports = (sequelize, DataTypes) => {
   const Op = sequelize.Op;
@@ -28,25 +28,33 @@ module.exports = (sequelize, DataTypes) => {
   //    order by count desc;
 
   Transaction.groupSumPayees = function(transactionData) {
-    const payees = _.groupBy(transactionData, t => {
+    const payee = transactionData.map(t => {
       return t.get("payee") || "none";
     });
-
-    // substring stuff that I'm not sure about
-    // const desc = transactionData.map(t => {
-    //   return t.get("description");
-    // });
-    // const tree = substrings.weigh(desc);
-    // console.log(tree);
-
-    const payeeSum = [];
-    _.forEach(payees, (trans, payee) => {
-      const sum = _.sumBy(trans, "amount");
-      payeeSum.push({ name: payee, sum });
+    const tree = substrings.weigh(payee, {
+      minLength: 8,
+      minOccurrence: 4
     });
 
-    const sorted = _.sortBy(payeeSum, [{ sum: "desc" }]);
-    return sorted;
+    return tree.map(group => {
+      const sum = _.sumBy(group.source, i => {
+        return +transactionData[i].amount;
+      });
+      return { name: group.name, sum, count: group.source.length };
+    });
+
+    // Other way of doing it
+    // const payees = _.groupBy(transactionData, t => {
+    //   return t.get("payee") || "none";
+    // });
+    // const payeeSum = [];
+    // _.forEach(payees, (trans, payee) => {
+    //   const sum = _.sumBy(trans, "amount");
+    //   payeeSum.push({ name: payee, sum });
+    // });
+
+    // const sorted = _.sortBy(payeeSum, [{ sum: "desc" }]);
+    // return sorted;
   };
 
   Transaction.listYears = function(userId) {
