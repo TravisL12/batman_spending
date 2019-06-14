@@ -1,7 +1,7 @@
 const { Category, Transaction } = require("../models");
 const sequelize = require("sequelize");
 const moment = require("moment");
-const _ = require("lodash");
+const { times, reduce } = require("lodash");
 const { dateRange } = require("../services/utility");
 const { to, ReE, ReS } = require("../services/response");
 
@@ -21,7 +21,7 @@ const CategoryController = {
 
     const [err, monthData] = await to(
       Promise.all(
-        _.times(numMonths, async () => {
+        times(numMonths, async () => {
           const year = date.year();
           const month = date.month();
           Object.assign(options, dateRange(year, month + 1));
@@ -51,14 +51,10 @@ const CategoryController = {
 
     // Concatenate all categories from response into one object
     // { 1: 'Taxes', 3: 'Food', 11: 'Gas' ... }
-    const idGroup = _.reduce(
-      monthData,
-      (group, data) => {
-        Object.assign(group, data.categoryData);
-        return group;
-      },
-      {}
-    );
+    const idGroup = monthData.reduce((group, data) => {
+      Object.assign(group, data.categoryData);
+      return group;
+    }, {});
 
     return ReS(
       res,
