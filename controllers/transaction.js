@@ -39,19 +39,27 @@ const TransactionController = {
     const page = req.params.page || 0;
 
     const query = { user_id: req.user.id };
-    if (req.query.search) {
-      query[Op.or] = [
-        {
+    const { search } = req.query;
+
+    const mapSearch = Array.isArray(search)
+      ? search.map(s => `%${s}%`)
+      : [`%${search}%`];
+
+    if (search) {
+      query[Op.or] = mapSearch.reduce((result, search) => {
+        result.push({
           description: {
-            [Op.like]: `%${req.query.search}%`
+            [Op.like]: search
           }
-        },
-        {
+        });
+        result.push({
           payee: {
-            [Op.like]: `%${req.query.search}%`
+            [Op.like]: search
           }
-        }
-      ];
+        });
+
+        return result;
+      }, []);
     }
 
     const [error, transactions] = await to(
