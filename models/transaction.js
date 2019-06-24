@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
     {}
   );
 
-  // INCORPORATE THIS
+  // INCORPORATE THIS - (DONE!!!!!)
   // Transaction.groupByPayee
   // select c.name, payee, count(*) count
   //    from transactions
@@ -39,16 +39,19 @@ module.exports = (sequelize, DataTypes) => {
     const payee = transactionData.map(t => {
       return t.get("payee") || "none";
     });
+
     const tree = substrings.weigh(payee, {
       minLength: 8,
       minOccurrence: 4
     });
 
-    return tree.map(group => {
-      const sum = sumBy(group.source, i => {
+    return tree.map(({ name, source }) => {
+      // loop through sources and combine for spending per month, not just the sum
+      const sum = sumBy(source, i => {
         return +transactionData[i].amount;
       });
-      return { name: group.name, sum, count: group.source.length };
+
+      return { name: name, sum, count: source.length };
     });
 
     // Other way of doing it
