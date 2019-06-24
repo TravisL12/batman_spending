@@ -42,7 +42,7 @@ module.exports = (sequelize, DataTypes) => {
     const transQueryParams = {
       user_id: userId,
       category_id: {
-        [Op.not]: options.excludeCategoryIds
+        [Op.not]: options.excludeCategoryIds || []
       },
       date: {
         $gte: options.startDate,

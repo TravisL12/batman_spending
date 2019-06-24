@@ -16,7 +16,7 @@ const CategoryController = {
    */
   async range(req, res) {
     const date = moment(new Date());
-    const options = { excludeCategoryIds: [2] }; // Outgoing transfers
+    const options = {};
     const numMonths = 12;
 
     const [err, monthData] = await to(
@@ -42,13 +42,6 @@ const CategoryController = {
       )
     );
 
-    // send an object instead of array? Nope, you don't
-    const reducedMonthData = monthData.reduce((result, i) => {
-      result[i.year] = result[i.year] ? result[i.year] : {};
-      result[i.year][i.month] = i.categoryData;
-      return result;
-    }, {});
-
     // Concatenate all categories from response into one object
     // { 1: 'Taxes', 3: 'Food', 11: 'Gas' ... }
     const idGroup = monthData.reduce((group, data) => {
@@ -60,8 +53,7 @@ const CategoryController = {
       res,
       {
         category_ids: idGroup,
-        categories: monthData.reverse(),
-        reducedMonthData
+        categories: monthData.reverse()
       },
       200
     );

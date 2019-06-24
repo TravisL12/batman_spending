@@ -91,13 +91,30 @@ module.exports = (sequelize, DataTypes) => {
    * Takes transactions and groups them in year-month objects
    * 2018: { // year
    *     2: { // month (Feb)
+   *     }
+   * }
+   */
+  Transaction.groupByYearMonth = function(transactionData) {
+    const transactions = Transaction.groupYear(transactionData);
+
+    _.forEach(transactions, (tYear, year) => {
+      transactions[year] = Transaction.groupMonth(transactions[year]);
+    });
+
+    return transactions;
+  };
+
+  /**
+   * Takes transactions and groups them in year-month objects
+   * 2018: { // year
+   *     2: { // month (Feb)
    *        5: [ // day
    *            ...transactions
    *           ]
    *     }
    * }
    */
-  Transaction.groupByYearMonth = function(transactionData) {
+  Transaction.groupByYearMonthDay = function(transactionData) {
     const transactions = Transaction.groupYear(transactionData);
     const categories = Object.keys(transactions).reduce((result, year) => {
       result[year] = {};

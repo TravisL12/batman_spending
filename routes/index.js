@@ -35,11 +35,6 @@ router.get(
   passport.authenticate("jwt", { session: false }),
   transactionController.list
 );
-// router.get(
-//   "/transactions/:id",
-//   passport.authenticate("jwt", { session: false }),
-//   transactionController.getById
-// );
 router.post(
   "/transactions",
   passport.authenticate("jwt", { session: false }),

@@ -27,7 +27,7 @@ const TransactionController = {
     );
     if (errTransactions) return ReE(res, errTransactions, 422);
 
-    const { transactions, categories } = TransactionModel.groupByYearMonth(
+    const { transactions, categories } = TransactionModel.groupByYearMonthDay(
       transactionData
     );
 
@@ -82,8 +82,11 @@ const TransactionController = {
     );
 
     const payees = TransactionModel.groupSumPayees(transactions);
+    const groupByDate = TransactionModel.groupByYearMonth(transactions);
 
-    return error ? ReE(res, error) : ReS(res, { transactions, payees }, 200);
+    return error
+      ? ReE(res, error)
+      : ReS(res, { transactions, payees, groupByDate }, 200);
   },
 
   import(req, res) {
@@ -111,22 +114,6 @@ const TransactionController = {
     const { user } = req;
     const [error, transaction] = await to(
       TransactionModel.createNew(req.body, user)
-    );
-
-    return error ? ReE(res, error) : ReS(res, { transaction }, 201);
-  },
-
-  // not used
-  async getById(req, res) {
-    const { user } = req;
-
-    const [error, transaction] = await to(
-      TransactionModel.find({
-        where: {
-          id: req.params.id,
-          user_id: user.id
-        }
-      })
     );
 
     return error ? ReE(res, error) : ReS(res, { transaction }, 201);
