@@ -47,11 +47,15 @@ module.exports = (sequelize, DataTypes) => {
 
     return tree.map(({ name, source }) => {
       // loop through sources and combine for spending per month, not just the sum
+      const groupedTransactions = source.map(i => {
+        return transactionData[i];
+      });
+      const groupByMonth = Transaction.groupByYearMonth(groupedTransactions);
       const sum = sumBy(source, i => {
         return +transactionData[i].amount;
       });
 
-      return { name: name, sum, count: source.length };
+      return { groupByMonth, name: name, sum, count: source.length };
     });
 
     // Other way of doing it

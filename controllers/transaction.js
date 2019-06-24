@@ -35,7 +35,7 @@ const TransactionController = {
   },
 
   async list(req, res) {
-    const limit = 500;
+    let limit = 500;
     const page = req.params.page || 0;
 
     const query = { user_id: req.user.id };
@@ -44,6 +44,7 @@ const TransactionController = {
     const mapSearch = Array.isArray(search) ? search : [search];
 
     if (search) {
+      limit = 1000;
       query[Op.or] = mapSearch.reduce((result, searchTerm) => {
         result.push({
           description: {
