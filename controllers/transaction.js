@@ -41,20 +41,18 @@ const TransactionController = {
     const query = { user_id: req.user.id };
     const { search } = req.query;
 
-    const mapSearch = Array.isArray(search)
-      ? search.map(s => `%${s}%`)
-      : [`%${search}%`];
+    const mapSearch = Array.isArray(search) ? search : [search];
 
     if (search) {
-      query[Op.or] = mapSearch.reduce((result, search) => {
+      query[Op.or] = mapSearch.reduce((result, searchTerm) => {
         result.push({
           description: {
-            [Op.like]: search
+            [Op.like]: `%${searchTerm}%`
           }
         });
         result.push({
           payee: {
-            [Op.like]: search
+            [Op.like]: `%${searchTerm}%`
           }
         });
 
