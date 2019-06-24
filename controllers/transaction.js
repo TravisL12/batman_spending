@@ -19,7 +19,7 @@ const TransactionController = {
     const options = !month
       ? dateRange(year, 12, numMonths)
       : dateRange(year, month);
-    options.excludeCategoryIds = [2]; // Outgoing transfers
+    options.excludeCategoryIds = []; // Outgoing transfers
 
     // Get Transaction data
     const [errTransactions, transactionData] = await to(

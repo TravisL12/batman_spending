@@ -1,8 +1,8 @@
+const { Op } = require("sequelize");
 const _ = require("lodash");
 const substrings = require("common-substrings");
 
 module.exports = (sequelize, DataTypes) => {
-  const Op = sequelize.Op;
   const CategoryModel = sequelize.models.Category;
   const Transaction = sequelize.define(
     "Transaction",

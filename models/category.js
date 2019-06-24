@@ -1,8 +1,8 @@
 "use strict";
+const { Op } = require("sequelize");
 const _ = require("lodash");
 
 module.exports = (sequelize, DataTypes) => {
-  const Op = sequelize.Op;
   const Category = sequelize.define(
     "Category",
     {
