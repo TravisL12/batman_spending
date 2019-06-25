@@ -1,8 +1,6 @@
-"use strict";
-const _ = require("lodash");
+const { Op } = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
-  const Op = sequelize.Op;
   const Category = sequelize.define(
     "Category",
     {
@@ -45,8 +43,8 @@ module.exports = (sequelize, DataTypes) => {
         [Op.not]: options.excludeCategoryIds || []
       },
       date: {
-        $gte: options.startDate,
-        $lt: options.endDate
+        [Op.gte]: options.startDate,
+        [Op.lt]: options.endDate
       }
     };
 
@@ -110,7 +108,7 @@ module.exports = (sequelize, DataTypes) => {
     const transactionQueryParams = {
       user_id: userId,
       category_id: { [Op.not]: options.excludeCategoryIds },
-      date: { $gte: options.startDate, $lt: options.endDate }
+      date: { [Op.gte]: options.startDate, [Op.lt]: options.endDate }
     };
 
     return Category.findAll({

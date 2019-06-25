@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const {
   forEach,
   groupBy,
@@ -10,7 +11,6 @@ const {
 const substrings = require("common-substrings");
 
 module.exports = (sequelize, DataTypes) => {
-  const Op = sequelize.Op;
   const CategoryModel = sequelize.models.Category;
   const Transaction = sequelize.define(
     "Transaction",
@@ -175,8 +175,8 @@ module.exports = (sequelize, DataTypes) => {
         [Op.not]: options.excludeCategoryIds
       },
       date: {
-        $gte: options.startDate,
-        $lt: options.endDate
+        [Op.gte]: options.startDate,
+        [Op.lt]: options.endDate
       }
     };
 
