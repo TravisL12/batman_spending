@@ -1,5 +1,13 @@
 const { Op } = require("sequelize");
-const _ = require("lodash");
+const {
+  forEach,
+  groupBy,
+  keyBy,
+  map,
+  sortBy,
+  sumBy,
+  uniqBy
+} = require("lodash");
 const substrings = require("common-substrings");
 
 module.exports = (sequelize, DataTypes) => {
@@ -18,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
     {}
   );
 
-  // INCORPORATE THIS
+  // INCORPORATE THIS - (DONE!!!!!)
   // Transaction.groupByPayee
   // select c.name, payee, count(*) count
   //    from transactions
@@ -31,29 +39,36 @@ module.exports = (sequelize, DataTypes) => {
     const payee = transactionData.map(t => {
       return t.get("payee") || "none";
     });
+
     const tree = substrings.weigh(payee, {
       minLength: 8,
       minOccurrence: 4
     });
 
-    return tree.map(group => {
-      const sum = _.sumBy(group.source, i => {
+    return tree.map(({ name, source }) => {
+      // loop through sources and combine for spending per month, not just the sum
+      const groupedTransactions = source.map(i => {
+        return transactionData[i];
+      });
+      const groupByMonth = Transaction.groupByYearMonth(groupedTransactions);
+      const sum = sumBy(source, i => {
         return +transactionData[i].amount;
       });
-      return { name: group.name, sum, count: group.source.length };
+
+      return { groupByMonth, name: name, sum, count: source.length };
     });
 
     // Other way of doing it
-    // const payees = _.groupBy(transactionData, t => {
+    // const payees = groupBy(transactionData, t => {
     //   return t.get("payee") || "none";
     // });
     // const payeeSum = [];
-    // _.forEach(payees, (trans, payee) => {
-    //   const sum = _.sumBy(trans, "amount");
+    // forEach(payees, (trans, payee) => {
+    //   const sum = sumBy(trans, "amount");
     //   payeeSum.push({ name: payee, sum });
     // });
 
-    // const sorted = _.sortBy(payeeSum, [{ sum: "desc" }]);
+    // const sorted = sortBy(payeeSum, [{ sum: "desc" }]);
     // return sorted;
   };
 
@@ -70,19 +85,19 @@ module.exports = (sequelize, DataTypes) => {
   };
 
   Transaction.groupYear = function(transactionData) {
-    return _.groupBy(transactionData, trans => {
+    return groupBy(transactionData, trans => {
       return new Date(trans.date).getFullYear();
     });
   };
 
   Transaction.groupMonth = function(transactionData) {
-    return _.groupBy(transactionData, trans => {
+    return groupBy(transactionData, trans => {
       return new Date(trans.date).getMonth() + 1;
     });
   };
 
   Transaction.groupDay = function(transactionData) {
-    return _.groupBy(transactionData, trans => {
+    return groupBy(transactionData, trans => {
       return new Date(trans.date).getDate();
     });
   };
@@ -97,7 +112,7 @@ module.exports = (sequelize, DataTypes) => {
   Transaction.groupByYearMonth = function(transactionData) {
     const transactions = Transaction.groupYear(transactionData);
 
-    _.forEach(transactions, (tYear, year) => {
+    forEach(transactions, (tYear, year) => {
       transactions[year] = Transaction.groupMonth(transactions[year]);
     });
 
@@ -120,16 +135,16 @@ module.exports = (sequelize, DataTypes) => {
       result[year] = {};
       return result;
     }, {});
-    const allCategories = _.keyBy(
-      _.uniqBy(_.map(transactionData, "Category"), "id"),
+    const allCategories = keyBy(
+      uniqBy(map(transactionData, "Category"), "id"),
       "id"
     );
 
-    _.forEach(transactions, (tYear, year) => {
+    forEach(transactions, (tYear, year) => {
       transactions[year] = Transaction.groupMonth(transactions[year]);
 
       // Filter Transaction data by day (date)
-      _.forEach(transactions[year], (tMonth, month) => {
+      forEach(transactions[year], (tMonth, month) => {
         categories[year][month] = CategoryModel.groupMonth(
           tMonth,
           allCategories

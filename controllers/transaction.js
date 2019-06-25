@@ -35,23 +35,30 @@ const TransactionController = {
   },
 
   async list(req, res) {
-    const limit = 500;
+    let limit = 500;
     const page = req.params.page || 0;
 
     const query = { user_id: req.user.id };
-    if (req.query.search) {
-      query[Op.or] = [
-        {
+    const { search } = req.query;
+
+    const mapSearch = Array.isArray(search) ? search : [search];
+
+    if (search) {
+      limit = 1000;
+      query[Op.or] = mapSearch.reduce((result, searchTerm) => {
+        result.push({
           description: {
-            [Op.like]: `%${req.query.search}%`
+            [Op.like]: `%${searchTerm}%`
           }
-        },
-        {
+        });
+        result.push({
           payee: {
-            [Op.like]: `%${req.query.search}%`
+            [Op.like]: `%${searchTerm}%`
           }
-        }
-      ];
+        });
+
+        return result;
+      }, []);
     }
 
     const [error, transactions] = await to(
