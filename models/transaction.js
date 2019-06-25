@@ -28,12 +28,12 @@ module.exports = (sequelize, DataTypes) => {
 
   Transaction.groupSumPayees = function(transactionData) {
     const payee = transactionData.map(t => {
-      return t.get("payee") || "none";
+      return t.get("payee") || "No Payee";
     });
 
     const tree = substrings.weigh(payee, {
       minLength: 8,
-      minOccurrence: 4
+      minOccurrence: 5
     });
 
     return tree.map(({ name, source }) => {

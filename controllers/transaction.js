@@ -88,12 +88,12 @@ const TransactionController = {
       })
     );
 
-    const payees = TransactionModel.groupSumPayees(transactions);
-    const groupByDate = TransactionModel.groupByYearMonth(transactions);
+    const results = { transactions };
+    if (search) {
+      results.payees = TransactionModel.groupSumPayees(transactions);
+    }
 
-    return error
-      ? ReE(res, error)
-      : ReS(res, { transactions, payees, groupByDate }, 200);
+    return error ? ReE(res, error) : ReS(res, results, 200);
   },
 
   import(req, res) {
