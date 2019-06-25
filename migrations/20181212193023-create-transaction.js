@@ -1,7 +1,6 @@
-"use strict";
 module.exports = {
-  up: (queryInterface, Sequelize) => {
-    const transactionTable = queryInterface.createTable("transactions", {
+  up: async (queryInterface, Sequelize) => {
+    const transactionTable = await queryInterface.createTable("transactions", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -39,7 +38,7 @@ module.exports = {
       }
     });
 
-    queryInterface.addConstraint(
+    await queryInterface.addConstraint(
       "transactions",
       ["description", "date", "amount", "user_id"],
       {
@@ -50,6 +49,7 @@ module.exports = {
 
     return transactionTable;
   },
+
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable("transactions");
   }

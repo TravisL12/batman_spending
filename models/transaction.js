@@ -26,15 +26,6 @@ module.exports = (sequelize, DataTypes) => {
     {}
   );
 
-  // INCORPORATE THIS - (DONE!!!!!)
-  // Transaction.groupByPayee
-  // select c.name, payee, count(*) count
-  //    from transactions
-  //    join categories c on c.id=transactions.category_id
-  //    where date >= '2018-1-01 00:00:00' and not payee=''
-  //    group by payee, category_id
-  //    order by count desc;
-
   Transaction.groupSumPayees = function(transactionData) {
     const payee = transactionData.map(t => {
       return t.get("payee") || "none";
@@ -46,7 +37,6 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     return tree.map(({ name, source }) => {
-      // loop through sources and combine for spending per month, not just the sum
       const groupedTransactions = source.map(i => {
         return transactionData[i];
       });
@@ -57,19 +47,6 @@ module.exports = (sequelize, DataTypes) => {
 
       return { groupByMonth, name: name, sum, count: source.length };
     });
-
-    // Other way of doing it
-    // const payees = groupBy(transactionData, t => {
-    //   return t.get("payee") || "none";
-    // });
-    // const payeeSum = [];
-    // forEach(payees, (trans, payee) => {
-    //   const sum = sumBy(trans, "amount");
-    //   payeeSum.push({ name: payee, sum });
-    // });
-
-    // const sorted = sortBy(payeeSum, [{ sum: "desc" }]);
-    // return sorted;
   };
 
   Transaction.listYears = function(userId) {
