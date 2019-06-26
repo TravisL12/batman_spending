@@ -42,54 +42,88 @@ const TransactionController = {
     const { search } = req.query;
 
     const mapSearch = Array.isArray(search) ? search : [search];
+    let error, transactions;
 
     if (search) {
       limit = 1000;
-      query[Op.or] = mapSearch.reduce((result, searchTerm) => {
-        result.push({
-          description: {
-            [Op.like]: `%${searchTerm}%`
-          }
-        });
-        result.push({
-          payee: {
-            [Op.like]: `%${searchTerm}%`
-          }
-        });
+      [error, transactions] = await to(
+        Promise.all(
+          mapSearch.map(async searchTerm => {
+            query[Op.or] = [
+              {
+                description: {
+                  [Op.like]: `%${searchTerm}%`
+                }
+              },
+              {
+                payee: {
+                  [Op.like]: `%${searchTerm}%`
+                }
+              }
+            ];
 
-        return result;
-      }, []);
+            const [err, newTransactions] = await to(
+              TransactionModel.findAll({
+                where: query,
+                limit,
+                offset: page * limit,
+                order: [["date", "DESC"]],
+                include: [
+                  {
+                    model: CategoryModel,
+                    attributes: ["id", "name"],
+                    as: "Category",
+                    where: {
+                      user_id: req.user.id
+                    }
+                  },
+                  {
+                    model: CategoryModel,
+                    attributes: ["id", "name"],
+                    as: "Subcategory",
+                    where: {
+                      user_id: req.user.id
+                    }
+                  }
+                ]
+              })
+            );
+            return newTransactions;
+          })
+        )
+      );
+    } else {
+      [error, transactions] = await to(
+        TransactionModel.findAll({
+          where: query,
+          limit,
+          offset: page * limit,
+          order: [["date", "DESC"]],
+          include: [
+            {
+              model: CategoryModel,
+              attributes: ["id", "name"],
+              as: "Category",
+              where: {
+                user_id: req.user.id
+              }
+            },
+            {
+              model: CategoryModel,
+              attributes: ["id", "name"],
+              as: "Subcategory",
+              where: {
+                user_id: req.user.id
+              }
+            }
+          ]
+        })
+      );
     }
-
-    const [error, transactions] = await to(
-      TransactionModel.findAll({
-        where: query,
-        limit,
-        offset: page * limit,
-        order: [["date", "DESC"]],
-        include: [
-          {
-            model: CategoryModel,
-            attributes: ["id", "name"],
-            as: "Category",
-            where: {
-              user_id: req.user.id
-            }
-          },
-          {
-            model: CategoryModel,
-            attributes: ["id", "name"],
-            as: "Subcategory",
-            where: {
-              user_id: req.user.id
-            }
-          }
-        ]
-      })
-    );
 
     const results = { transactions };
     if (search) {
+      console.log(transactions);
       results.payees = TransactionModel.groupSumPayees(transactions);
     }
 
