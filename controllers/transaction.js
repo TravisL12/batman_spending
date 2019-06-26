@@ -42,11 +42,11 @@ const TransactionController = {
     const { search } = req.query;
 
     const mapSearch = Array.isArray(search) ? search : [search];
-    let error, transactions;
+    let searchError, searchTransactions;
 
     if (search) {
       limit = 1000;
-      [error, transactions] = await to(
+      [searchError, searchTransactions] = await to(
         Promise.all(
           mapSearch.map(async searchTerm => {
             query[Op.or] = [
@@ -92,39 +92,62 @@ const TransactionController = {
           })
         )
       );
-    } else {
-      [error, transactions] = await to(
-        TransactionModel.findAll({
-          where: query,
-          limit,
-          offset: page * limit,
-          order: [["date", "DESC"]],
-          include: [
-            {
-              model: CategoryModel,
-              attributes: ["id", "name"],
-              as: "Category",
-              where: {
-                user_id: req.user.id
-              }
-            },
-            {
-              model: CategoryModel,
-              attributes: ["id", "name"],
-              as: "Subcategory",
-              where: {
-                user_id: req.user.id
-              }
-            }
-          ]
-        })
-      );
+
+      query[Op.or] = mapSearch.reduce((result, searchTerm) => {
+        result.push({
+          description: {
+            [Op.like]: `%${searchTerm}%`
+          }
+        });
+        result.push({
+          payee: {
+            [Op.like]: `%${searchTerm}%`
+          }
+        });
+
+        return result;
+      }, []);
     }
 
+    const [error, transactions] = await to(
+      TransactionModel.findAll({
+        where: query,
+        limit,
+        offset: page * limit,
+        order: [["date", "DESC"]],
+        include: [
+          {
+            model: CategoryModel,
+            attributes: ["id", "name"],
+            as: "Category",
+            where: {
+              user_id: req.user.id
+            }
+          },
+          {
+            model: CategoryModel,
+            attributes: ["id", "name"],
+            as: "Subcategory",
+            where: {
+              user_id: req.user.id
+            }
+          }
+        ]
+      })
+    );
+
     const results = { transactions };
+
     if (search) {
-      console.log(transactions);
-      results.payees = TransactionModel.groupSumPayees(transactions);
+      results.payees = mapSearch.map((search, idx) => {
+        const trans = searchTransactions[idx];
+
+        return {
+          name: search,
+          grouped: TransactionModel.groupByYearMonth(trans),
+          ...TransactionModel.groupSumPayees(trans)
+        };
+      });
     }
 
     return error ? ReE(res, error) : ReS(res, results, 200);
