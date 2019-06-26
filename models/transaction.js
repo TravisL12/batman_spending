@@ -27,11 +27,9 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   Transaction.groupSumPayees = function(transactionData) {
-    const sum = transactionData.reduce((total, t) => {
+    return transactionData.reduce((total, t) => {
       return (total += +t.amount);
     }, 0);
-
-    return { sum, count: transactionData.length };
   };
 
   Transaction.listYears = function(userId) {

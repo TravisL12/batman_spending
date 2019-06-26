@@ -41,8 +41,31 @@ const TransactionController = {
     const query = { user_id: req.user.id };
     const { search } = req.query;
 
-    const mapSearch = Array.isArray(search) ? search : [search];
     let searchError, searchTransactions;
+    const mapSearch = Array.isArray(search) ? search : [search];
+    const parameters = {
+      limit,
+      offset: page * limit,
+      order: [["date", "DESC"]],
+      include: [
+        {
+          model: CategoryModel,
+          attributes: ["id", "name"],
+          as: "Category",
+          where: {
+            user_id: req.user.id
+          }
+        },
+        {
+          model: CategoryModel,
+          attributes: ["id", "name"],
+          as: "Subcategory",
+          where: {
+            user_id: req.user.id
+          }
+        }
+      ]
+    };
 
     if (search) {
       limit = 1000;
@@ -65,27 +88,7 @@ const TransactionController = {
             const [err, newTransactions] = await to(
               TransactionModel.findAll({
                 where: query,
-                limit,
-                offset: page * limit,
-                order: [["date", "DESC"]],
-                include: [
-                  {
-                    model: CategoryModel,
-                    attributes: ["id", "name"],
-                    as: "Category",
-                    where: {
-                      user_id: req.user.id
-                    }
-                  },
-                  {
-                    model: CategoryModel,
-                    attributes: ["id", "name"],
-                    as: "Subcategory",
-                    where: {
-                      user_id: req.user.id
-                    }
-                  }
-                ]
+                ...parameters
               })
             );
             return newTransactions;
@@ -93,46 +96,30 @@ const TransactionController = {
         )
       );
 
+      // Prepare full search
       query[Op.or] = mapSearch.reduce((result, searchTerm) => {
-        result.push({
-          description: {
-            [Op.like]: `%${searchTerm}%`
+        result.push(
+          {
+            description: {
+              [Op.like]: `%${searchTerm}%`
+            }
+          },
+          {
+            payee: {
+              [Op.like]: `%${searchTerm}%`
+            }
           }
-        });
-        result.push({
-          payee: {
-            [Op.like]: `%${searchTerm}%`
-          }
-        });
+        );
 
         return result;
       }, []);
     }
 
+    // Full search
     const [error, transactions] = await to(
       TransactionModel.findAll({
         where: query,
-        limit,
-        offset: page * limit,
-        order: [["date", "DESC"]],
-        include: [
-          {
-            model: CategoryModel,
-            attributes: ["id", "name"],
-            as: "Category",
-            where: {
-              user_id: req.user.id
-            }
-          },
-          {
-            model: CategoryModel,
-            attributes: ["id", "name"],
-            as: "Subcategory",
-            where: {
-              user_id: req.user.id
-            }
-          }
-        ]
+        ...parameters
       })
     );
 
@@ -145,7 +132,8 @@ const TransactionController = {
         return {
           name: search,
           grouped: TransactionModel.groupByYearMonth(trans),
-          ...TransactionModel.groupSumPayees(trans)
+          count: trans.length,
+          sum: TransactionModel.groupSumPayees(trans)
         };
       });
     }
