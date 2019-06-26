@@ -27,9 +27,26 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   Transaction.groupSumPayees = function(transactionData) {
-    return transactionData.reduce((total, t) => {
-      return (total += +t.amount);
-    }, 0);
+    const payee = transactionData.map(t => {
+      return t.get("payee") || "No Payee";
+    });
+
+    const tree = substrings.weigh(payee, {
+      minLength: 8,
+      minOccurrence: 5
+    });
+
+    return tree.map(({ name, source }) => {
+      const sum = sumBy(source, i => {
+        return +transactionData[i].amount;
+      });
+
+      return { name, sum, count: source.length };
+    });
+  };
+
+  Transaction.sumTransactions = function(transactionData) {
+    return sumBy(transactionData, "amount");
   };
 
   Transaction.listYears = function(userId) {

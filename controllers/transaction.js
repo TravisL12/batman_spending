@@ -44,7 +44,6 @@ const TransactionController = {
     let searchError, searchTransactions;
     const mapSearch = Array.isArray(search) ? search : [search];
     const parameters = {
-      limit,
       offset: page * limit,
       order: [["date", "DESC"]],
       include: [
@@ -88,6 +87,7 @@ const TransactionController = {
             const [err, newTransactions] = await to(
               TransactionModel.findAll({
                 where: query,
+                limit,
                 ...parameters
               })
             );
@@ -119,6 +119,7 @@ const TransactionController = {
     const [error, transactions] = await to(
       TransactionModel.findAll({
         where: query,
+        limit,
         ...parameters
       })
     );
@@ -126,14 +127,14 @@ const TransactionController = {
     const results = { transactions };
 
     if (search) {
-      results.payees = mapSearch.map((search, idx) => {
+      results.searchResults = mapSearch.map((search, idx) => {
         const trans = searchTransactions[idx];
 
         return {
           name: search,
           grouped: TransactionModel.groupByYearMonth(trans),
           count: trans.length,
-          sum: TransactionModel.groupSumPayees(trans)
+          sum: TransactionModel.sumTransactions(trans)
         };
       });
     }
