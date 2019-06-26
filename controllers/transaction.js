@@ -41,59 +41,104 @@ const TransactionController = {
     const query = { user_id: req.user.id };
     const { search } = req.query;
 
+    let searchError, searchTransactions;
     const mapSearch = Array.isArray(search) ? search : [search];
+    const parameters = {
+      limit,
+      offset: page * limit,
+      order: [["date", "DESC"]],
+      include: [
+        {
+          model: CategoryModel,
+          attributes: ["id", "name"],
+          as: "Category",
+          where: {
+            user_id: req.user.id
+          }
+        },
+        {
+          model: CategoryModel,
+          attributes: ["id", "name"],
+          as: "Subcategory",
+          where: {
+            user_id: req.user.id
+          }
+        }
+      ]
+    };
 
     if (search) {
       limit = 1000;
+      [searchError, searchTransactions] = await to(
+        Promise.all(
+          mapSearch.map(async searchTerm => {
+            query[Op.or] = [
+              {
+                description: {
+                  [Op.like]: `%${searchTerm}%`
+                }
+              },
+              {
+                payee: {
+                  [Op.like]: `%${searchTerm}%`
+                }
+              }
+            ];
+
+            const [err, newTransactions] = await to(
+              TransactionModel.findAll({
+                where: query,
+                ...parameters
+              })
+            );
+            return newTransactions;
+          })
+        )
+      );
+
+      // Prepare full search
       query[Op.or] = mapSearch.reduce((result, searchTerm) => {
-        result.push({
-          description: {
-            [Op.like]: `%${searchTerm}%`
+        result.push(
+          {
+            description: {
+              [Op.like]: `%${searchTerm}%`
+            }
+          },
+          {
+            payee: {
+              [Op.like]: `%${searchTerm}%`
+            }
           }
-        });
-        result.push({
-          payee: {
-            [Op.like]: `%${searchTerm}%`
-          }
-        });
+        );
 
         return result;
       }, []);
     }
 
+    // Full search
     const [error, transactions] = await to(
       TransactionModel.findAll({
         where: query,
-        limit,
-        offset: page * limit,
-        order: [["date", "DESC"]],
-        include: [
-          {
-            model: CategoryModel,
-            attributes: ["id", "name"],
-            as: "Category",
-            where: {
-              user_id: req.user.id
-            }
-          },
-          {
-            model: CategoryModel,
-            attributes: ["id", "name"],
-            as: "Subcategory",
-            where: {
-              user_id: req.user.id
-            }
-          }
-        ]
+        ...parameters
       })
     );
 
-    const payees = TransactionModel.groupSumPayees(transactions);
-    const groupByDate = TransactionModel.groupByYearMonth(transactions);
+    const results = { transactions };
 
-    return error
-      ? ReE(res, error)
-      : ReS(res, { transactions, payees, groupByDate }, 200);
+    if (search) {
+      results.payees = mapSearch.map((search, idx) => {
+        const trans = searchTransactions[idx];
+
+        return {
+          name: search,
+          grouped: TransactionModel.groupByYearMonth(trans),
+          count: trans.length,
+          sum: TransactionModel.groupSumPayees(trans)
+        };
+      });
+    }
+
+    return error ? ReE(res, error) : ReS(res, results, 200);
   },
 
   import(req, res) {
