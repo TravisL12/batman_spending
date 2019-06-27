@@ -45,10 +45,6 @@ module.exports = (sequelize, DataTypes) => {
     });
   };
 
-  Transaction.sumTransactions = function(transactionData) {
-    return sumBy(transactionData, "amount");
-  };
-
   Transaction.listYears = function(userId) {
     // select distinct(date_format(date, '%Y')) year from transactions order by year;
     return Transaction.findAll({

@@ -5,7 +5,7 @@ const {
 const fs = require("fs");
 const parse = require("csv-parse");
 const transform = require("stream-transform");
-const _ = require("lodash");
+const { sortBy, sumBy } = require("lodash");
 const { dateRange } = require("../services/utility");
 const { to, ReE, ReS } = require("../services/response");
 const { Op } = require("sequelize");
@@ -36,16 +36,14 @@ const TransactionController = {
 
   async list(req, res) {
     let limit = 500;
-    const page = req.params.page || 0;
-
-    const query = { user_id: req.user.id };
     const { search } = req.query;
+    const page = req.params.page || 0;
+    const query = { user_id: req.user.id };
 
-    let searchError, searchTransactions;
-    const mapSearch = Array.isArray(search) ? search : [search];
     const parameters = {
-      offset: page * limit,
       order: [["date", "DESC"]],
+      offset: page * limit,
+      limit,
       include: [
         {
           model: CategoryModel,
@@ -66,80 +64,66 @@ const TransactionController = {
       ]
     };
 
-    if (search) {
-      limit = 1000;
-      [searchError, searchTransactions] = await to(
-        Promise.all(
-          mapSearch.map(async searchTerm => {
-            query[Op.or] = [
-              {
-                description: {
-                  [Op.like]: `%${searchTerm}%`
-                }
-              },
-              {
-                payee: {
-                  [Op.like]: `%${searchTerm}%`
-                }
-              }
-            ];
-
-            const [err, newTransactions] = await to(
-              TransactionModel.findAll({
-                where: query,
-                limit,
-                ...parameters
-              })
-            );
-            return newTransactions;
-          })
-        )
+    if (!search) {
+      const [error, transactions] = await to(
+        TransactionModel.findAll({
+          ...parameters,
+          where: query
+        })
       );
 
-      // Prepare full search
-      query[Op.or] = mapSearch.reduce((result, searchTerm) => {
-        result.push(
-          {
-            description: {
-              [Op.like]: `%${searchTerm}%`
-            }
-          },
-          {
-            payee: {
-              [Op.like]: `%${searchTerm}%`
-            }
-          }
-        );
-
-        return result;
-      }, []);
+      return error ? ReE(res, error) : ReS(res, { transactions }, 200);
     }
 
-    // Full search
-    const [error, transactions] = await to(
-      TransactionModel.findAll({
-        where: query,
-        limit,
-        ...parameters
-      })
+    limit = 1000;
+    let groupedTransactions = [];
+    const mapSearch = Array.isArray(search) ? search : [search];
+
+    const [error, searchTransactions] = await to(
+      Promise.all(
+        mapSearch.map(async searchTerm => {
+          query[Op.or] = [
+            {
+              description: {
+                [Op.like]: `%${searchTerm}%`
+              }
+            },
+            {
+              payee: {
+                [Op.like]: `%${searchTerm}%`
+              }
+            }
+          ];
+
+          const [err, newTransactions] = await to(
+            TransactionModel.findAll({
+              ...parameters,
+              where: query,
+              offset: page * limit,
+              limit
+            })
+          );
+          groupedTransactions = groupedTransactions.concat(newTransactions);
+          return newTransactions;
+        })
+      )
     );
 
-    const results = { transactions };
+    const transactions = sortBy(groupedTransactions, "date").reverse();
+    const searchResults = mapSearch.map((search, idx) => {
+      const trans = searchTransactions[idx];
 
-    if (search) {
-      results.searchResults = mapSearch.map((search, idx) => {
-        const trans = searchTransactions[idx];
+      return {
+        name: search,
+        grouped: TransactionModel.groupByYearMonth(trans),
+        count: trans.length,
+        sum: sumBy(trans, "amount")
+      };
+    });
 
-        return {
-          name: search,
-          grouped: TransactionModel.groupByYearMonth(trans),
-          count: trans.length,
-          sum: TransactionModel.sumTransactions(trans)
-        };
-      });
-    }
-
-    return error ? ReE(res, error) : ReS(res, results, 200);
+    return error
+      ? ReE(res, error)
+      : ReS(res, { transactions, searchResults }, 200);
   },
 
   import(req, res) {
