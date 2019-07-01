@@ -196,7 +196,7 @@ module.exports = (sequelize, DataTypes) => {
 
     if (newDate) {
       const year = new Date(date).getFullYear(); // used to get the year
-      date = [newDate[0].trim(), year].join("/");
+      date = [year, newDate[0].trim()].join("-");
     }
 
     const createdAt = new Date();
