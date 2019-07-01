@@ -39,7 +39,7 @@ const TransactionController = {
     const { search } = req.query;
     const page = req.params.page || 0;
     const query = { user_id: req.user.id };
-
+    // ADD DATE!!! const query = { user_id: req.user.id, date: { [Op.gte]: "2019-03-15" } };
     const parameters = {
       order: [["date", "DESC"]],
       offset: page * limit,
