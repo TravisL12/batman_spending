@@ -36,10 +36,11 @@ const TransactionController = {
 
   async list(req, res) {
     let limit = 500;
-    const { search } = req.query;
+    const search = req.query.keywordSearches;
+    const { beforeDate, afterDate } = req.query;
+
     const page = req.params.page || 0;
     const query = { user_id: req.user.id };
-    // ADD DATE!!! const query = { user_id: req.user.id, date: { [Op.gte]: "2019-03-15" } };
     const parameters = {
       order: [["date", "DESC"]],
       offset: page * limit,
@@ -63,6 +64,18 @@ const TransactionController = {
         }
       ]
     };
+
+    const dateQuery = {};
+    if (beforeDate) {
+      dateQuery[Op.lte] = beforeDate;
+    }
+    if (afterDate) {
+      dateQuery[Op.gte] = afterDate;
+    }
+
+    if (beforeDate || afterDate) {
+      query.date = dateQuery;
+    }
 
     if (!search) {
       const [error, transactions] = await to(
