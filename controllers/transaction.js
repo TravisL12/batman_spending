@@ -44,7 +44,6 @@ const TransactionController = {
     const parameters = {
       order: [["date", "DESC"]],
       offset: page * limit,
-      limit,
       include: [
         {
           model: CategoryModel,
@@ -74,6 +73,7 @@ const TransactionController = {
     }
 
     if (beforeDate || afterDate) {
+      limit = 1000;
       query.date = dateQuery;
     }
 
@@ -81,6 +81,7 @@ const TransactionController = {
       const [error, transactions] = await to(
         TransactionModel.findAll({
           ...parameters,
+          limit,
           where: query
         })
       );
