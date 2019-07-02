@@ -37,10 +37,16 @@ const TransactionController = {
   async list(req, res) {
     let limit = 500;
     const search = req.query.keywordSearches;
-    const { beforeDate, afterDate } = req.query;
+    const { beforeDate, afterDate, categoryIds } = req.query;
 
     const page = req.params.page || 0;
     const query = { user_id: req.user.id };
+
+    const categoryWhere = { ...query };
+    if (categoryIds) {
+      categoryWhere.id = categoryIds;
+    }
+
     const parameters = {
       order: [["date", "DESC"]],
       offset: page * limit,
@@ -49,9 +55,7 @@ const TransactionController = {
           model: CategoryModel,
           attributes: ["id", "name"],
           as: "Category",
-          where: {
-            user_id: req.user.id
-          }
+          where: categoryWhere
         },
         {
           model: CategoryModel,
