@@ -61,16 +61,12 @@ const CategoryController = {
 
   async list(req, res) {
     const [error, categories] = await to(
-      Category.countSumJoinSubcategories(req.user.id)
+      Category.findAll({ where: { user_id: req.user.id } })
     );
 
     if (error) return ReE(res, error);
 
-    const filteredCats = categories.filter(({ dataValues: category }) => {
-      return category.transactionCount > 0;
-    });
-
-    return ReS(res, { categories: filteredCats }, 200);
+    return ReS(res, { categories }, 200);
   },
 
   async getById(req, res) {
