@@ -44,7 +44,9 @@ const TransactionController = {
 
     const categoryWhere = { ...query };
     if (categoryIds) {
-      categoryWhere.id = categoryIds;
+      categoryWhere.id = Array.isArray(categoryIds)
+        ? categoryIds
+        : [categoryIds];
     }
 
     const parameters = {
