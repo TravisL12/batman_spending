@@ -43,8 +43,8 @@ module.exports = (sequelize, DataTypes) => {
         [Op.not]: options.excludeCategoryIds || []
       },
       date: {
-        [Op.gte]: options.startDate,
-        [Op.lt]: options.endDate
+        [Op.gte]: options.afterDate,
+        [Op.lt]: options.beforeDate
       }
     };
 
