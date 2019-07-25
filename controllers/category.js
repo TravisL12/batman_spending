@@ -16,7 +16,8 @@ const CategoryController = {
    */
 
   async range(req, res) {
-    const numMonths = 12;
+    const numMonths = req.query.monthsBack || 12;
+
     const afterDate = moment().subtract(numMonths, "M");
     const options = { afterDate, beforeDate: moment() };
 
