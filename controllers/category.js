@@ -14,6 +14,7 @@ const CategoryController = {
    *    categories: monthData.reverse()
    * }
    */
+
   async range(req, res) {
     const numMonths = 12;
     const afterDate = moment().subtract(numMonths, "M");
@@ -23,29 +24,16 @@ const CategoryController = {
       Category.getDates(req.user.id, options)
     );
 
-    const monthData = categoryData.reduce((result, category) => {
-      result.push({
-        id: category.id,
-        transactions: Transaction.groupByYearMonth(category.Transactions)
-      });
-      return result;
-    }, []);
+    const categories = categoryData.reduce((result, category) => {
+      result[category.id] = {
+        ...category.get({ plain: true }),
+        Transactions: Transaction.groupByYearMonth(category.Transactions)
+      };
 
-    // Concatenate all categories from response into one object
-    // { 1: 'Taxes', 3: 'Food', 11: 'Gas' ... }
-    const idGroup = monthData.reduce((group, data) => {
-      Object.assign(group, data.categoryData);
-      return group;
+      return result;
     }, {});
 
-    return ReS(
-      res,
-      {
-        category_ids: idGroup,
-        categories: monthData.reverse()
-      },
-      200
-    );
+    return ReS(res, { categories }, 200);
   },
 
   async list(req, res) {
