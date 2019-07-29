@@ -106,6 +106,7 @@ module.exports = (sequelize, DataTypes) => {
     forEach(transactions, (tYear, year) => {
       const monthSums = Transaction.groupMonth(transactions[year]);
 
+      // Iterate over all 12 months
       transactions[year] = times(12, o => o + 1).map(month => {
         return sumBy(monthSums[month], "amount");
       });
