@@ -5,49 +5,6 @@ const { reduce } = require("lodash");
 const { dateRange } = require("../services/utility");
 const { to, ReE, ReS } = require("../services/response");
 
-getTransactionSum = (year, month, id) => {
-  const { checkedCategories, categories } = this.state;
-  const { Transactions } = categories[id];
-
-  if (
-    checkedCategories[id] &&
-    Transactions[year] &&
-    Transactions[year][month + 1]
-  ) {
-    return Transactions[year][month + 1].reduce((sum, t) => {
-      sum += t.amount;
-      return sum;
-    }, 0);
-  } else {
-    return 0;
-  }
-};
-
-getMonthSums = categoryId => {
-  const { graphCumulative, dateRange } = this.state;
-
-  return dateRange.reduce((result, { month, year }, idx) => {
-    const monthSum = this.getTransactionSum(year, month, categoryId);
-    const sum =
-      graphCumulative && idx > 0 ? monthSum + result.slice(-1)[0] : monthSum;
-
-    return [...result, sum];
-  }, []);
-};
-
-calculateCategoryTotal = (month, year) => {
-  const { categories } = this.state;
-
-  const total = values(categories).reduce((sum, { id }) => {
-    return sum + this.getTransactionSum(year, month, id);
-  }, 0);
-
-  return currency(total, {
-    minimumFractionDigits: 0,
-    rounded: true
-  });
-};
-
 const CategoryController = {
   // Get category spending of past months
   /**
