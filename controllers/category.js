@@ -27,8 +27,9 @@ const CategoryController = {
 
     const categories = categoryData.reduce((result, category) => {
       result[category.id] = {
-        ...category.get({ plain: true }),
-        Transactions: Transaction.sumByYearMonth(category.Transactions)
+        id: category.id,
+        name: category.name,
+        transactionTotals: Transaction.sumByYearMonth(category.Transactions)
       };
 
       return result;
