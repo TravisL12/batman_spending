@@ -1,7 +1,7 @@
 const { Category, Transaction } = require("../models");
 const sequelize = require("sequelize");
 const moment = require("moment");
-const { times, reduce } = require("lodash");
+const { reduce } = require("lodash");
 const { dateRange } = require("../services/utility");
 const { to, ReE, ReS } = require("../services/response");
 
@@ -14,49 +14,27 @@ const CategoryController = {
    *    categories: monthData.reverse()
    * }
    */
+
   async range(req, res) {
-    const date = moment(new Date());
-    const options = {};
-    const numMonths = 12;
+    const numMonths = req.query.monthsBack || 12;
 
-    const [err, monthData] = await to(
-      Promise.all(
-        times(numMonths, async () => {
-          const year = date.year();
-          const month = date.month();
-          Object.assign(options, dateRange(year, month + 1));
+    const afterDate = moment().subtract(numMonths, "M");
+    const options = { afterDate, beforeDate: moment() };
 
-          date.subtract(1, "M"); // moment dates are mutable
-          const [err, categoryData] = await to(
-            Category.getDates(req.user.id, options)
-          );
-          if (err) return ReE(res, err, 422);
-
-          const data = categoryData.reduce((result, cat) => {
-            result[cat.id] = cat;
-            return result;
-          }, {});
-
-          return { month, year, categoryData: data };
-        })
-      )
+    const [err, categoryData] = await to(
+      Category.getDates(req.user.id, options)
     );
 
-    // Concatenate all categories from response into one object
-    // { 1: 'Taxes', 3: 'Food', 11: 'Gas' ... }
-    const idGroup = monthData.reduce((group, data) => {
-      Object.assign(group, data.categoryData);
-      return group;
+    const categories = categoryData.reduce((result, category) => {
+      result[category.id] = {
+        ...category.get({ plain: true }),
+        Transactions: Transaction.sumByYearMonth(category.Transactions)
+      };
+
+      return result;
     }, {});
 
-    return ReS(
-      res,
-      {
-        category_ids: idGroup,
-        categories: monthData.reverse()
-      },
-      200
-    );
+    return ReS(res, { categories }, 200);
   },
 
   async list(req, res) {

@@ -6,7 +6,8 @@ const {
   map,
   sortBy,
   sumBy,
-  uniqBy
+  uniqBy,
+  times
 } = require("lodash");
 const substrings = require("common-substrings");
 
@@ -87,6 +88,28 @@ module.exports = (sequelize, DataTypes) => {
 
     forEach(transactions, (tYear, year) => {
       transactions[year] = Transaction.groupMonth(transactions[year]);
+    });
+
+    return transactions;
+  };
+
+  /**
+   * Takes transactions and groups them in year-month objects
+   * 2018: { // year
+   *     2: { // month (Feb)
+   *     }
+   * }
+   */
+  Transaction.sumByYearMonth = function(transactionData) {
+    const transactions = Transaction.groupYear(transactionData);
+
+    forEach(transactions, (tYear, year) => {
+      const monthSums = Transaction.groupMonth(transactions[year]);
+
+      // Iterate over all 12 months
+      transactions[year] = times(12, o => o + 1).map(month => {
+        return sumBy(monthSums[month], "amount");
+      });
     });
 
     return transactions;
