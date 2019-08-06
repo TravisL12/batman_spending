@@ -136,6 +136,7 @@ const TransactionController = {
       return {
         name: search,
         grouped: TransactionModel.groupByYearMonth(trans),
+        transactionTotals: TransactionModel.sumByYearMonth(trans),
         count: trans.length,
         sum: sumBy(trans, "amount")
       };
