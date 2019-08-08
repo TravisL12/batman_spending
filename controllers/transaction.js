@@ -175,6 +175,19 @@ const TransactionController = {
     );
 
     return error ? ReE(res, error) : ReS(res, { transaction }, 201);
+  },
+
+  async update(req, res) {
+    const { id } = req.params;
+    const { category_id } = req.body;
+    const [error, transaction] = await to(
+      TransactionModel.update(
+        { category_id, subcategory_id: 122 }, // 122 is NONE (find right way!)
+        { where: { id } }
+      )
+    );
+
+    return error ? ReE(res, error) : ReS(res, { transaction }, 201);
   }
 };
 

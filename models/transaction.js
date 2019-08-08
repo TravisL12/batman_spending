@@ -4,7 +4,6 @@ const {
   groupBy,
   keyBy,
   map,
-  sortBy,
   sumBy,
   uniqBy,
   times
