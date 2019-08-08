@@ -47,7 +47,7 @@ router.post(
   transactionController.import
 );
 router.post(
-  "/categories/update/:id",
+  "/categories/update/:id?",
   passport.authenticate("jwt", { session: false }),
   transactionController.update
 );

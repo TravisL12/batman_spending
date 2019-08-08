@@ -178,7 +178,7 @@ const TransactionController = {
   },
 
   async update(req, res) {
-    const { id } = req.params;
+    const id = req.params.id || req.body.id;
     const { category_id } = req.body;
     const [error, transaction] = await to(
       TransactionModel.update(
