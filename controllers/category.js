@@ -1,5 +1,6 @@
 const { Category, Transaction } = require("../models");
 const moment = require("moment");
+const { sumBy } = require("lodash");
 const { to, ReE, ReS } = require("../services/response");
 
 const CategoryController = {
@@ -26,7 +27,8 @@ const CategoryController = {
       result[category.id] = {
         id: category.id,
         name: category.name,
-        transactionTotals: Transaction.sumByYearMonth(category.Transactions)
+        transactionTotals: Transaction.sumByYearMonth(category.Transactions),
+        total: sumBy(category.Transactions, "amount")
       };
 
       return result;
