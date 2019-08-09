@@ -38,7 +38,13 @@ const CategoryController = {
   async list(req, res) {
     const [error, categories] = await to(
       Category.findAll({
-        where: { user_id: req.user.id, parent_category_id: null }
+        where: { user_id: req.user.id, parent_category_id: null },
+        include: [
+          {
+            model: Category,
+            as: "Subcategory"
+          }
+        ]
       })
     );
 
