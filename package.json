@@ -14,7 +14,7 @@
   "license": "",
   "dependencies": {
     "await-to-js": "^2.1.1",
-    "bcrypt": "^3.0.2",
+    "bcrypt": "^5.0.0",
     "bcrypt-promise": "^2.0.0",
     "body-parser": "*",
     "common-substrings": "^1.0.2",
