@@ -46,6 +46,11 @@ router.post(
   upload.single("file"),
   transactionController.import
 );
+router.post(
+  "/categories/update/:id?",
+  passport.authenticate("jwt", { session: false }),
+  transactionController.update
+);
 
 // CATEGORIES
 router.get(

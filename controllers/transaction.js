@@ -136,6 +136,7 @@ const TransactionController = {
       return {
         name: search,
         grouped: TransactionModel.groupByYearMonth(trans),
+        transactionTotals: TransactionModel.sumByYearMonth(trans),
         count: trans.length,
         sum: sumBy(trans, "amount")
       };
@@ -171,6 +172,19 @@ const TransactionController = {
     const { user } = req;
     const [error, transaction] = await to(
       TransactionModel.createNew(req.body, user)
+    );
+
+    return error ? ReE(res, error) : ReS(res, { transaction }, 201);
+  },
+
+  async update(req, res) {
+    const id = req.params.id || req.body.id;
+    const { category_id } = req.body;
+    const [error, transaction] = await to(
+      TransactionModel.update(
+        { category_id, subcategory_id: 122 }, // 122 is NONE (find right way!)
+        { where: { id } }
+      )
     );
 
     return error ? ReE(res, error) : ReS(res, { transaction }, 201);

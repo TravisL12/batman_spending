@@ -1,8 +1,6 @@
 const { Category, Transaction } = require("../models");
-const sequelize = require("sequelize");
 const moment = require("moment");
-const { times, reduce } = require("lodash");
-const { dateRange } = require("../services/utility");
+const { sumBy } = require("lodash");
 const { to, ReE, ReS } = require("../services/response");
 
 const CategoryController = {
@@ -27,8 +25,10 @@ const CategoryController = {
 
     const categories = categoryData.reduce((result, category) => {
       result[category.id] = {
-        ...category.get({ plain: true }),
-        Transactions: Transaction.groupByYearMonth(category.Transactions)
+        id: category.id,
+        name: category.name,
+        transactionTotals: Transaction.sumByYearMonth(category.Transactions),
+        total: sumBy(category.Transactions, "amount")
       };
 
       return result;
@@ -40,7 +40,13 @@ const CategoryController = {
   async list(req, res) {
     const [error, categories] = await to(
       Category.findAll({
-        where: { user_id: req.user.id, parent_category_id: null }
+        where: { user_id: req.user.id, parent_category_id: null },
+        include: [
+          {
+            model: Category,
+            as: "Subcategory"
+          }
+        ]
       })
     );
 
